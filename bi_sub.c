@@ -16,6 +16,7 @@ void SUBC(bi* A, bi* B, bi* Z)
     if (B->dmax != A->dmax) {// 크기가 다르면 할당
 		(B->a) = (bi_word*)realloc(B->a, (A->dmax) * sizeof(bi_word)); // B의 dmax 할당
 	}
+	//test.......
 }
 
 /**************************************************************
