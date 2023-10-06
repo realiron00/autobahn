@@ -1,24 +1,5 @@
 #include "autobahn.h"
-/*
-procedure SUBAbB(A, b, B)
-2: b
-0 ← 0
-3: C ← A  b
-4: if A < b then . A = 0 and b = 1
-5: b
-0 ← 1
-6: end if
-7: if C < B then
-8: b
-0 ← b
-0 + 1 . b0 ← 1
-9: end if
-10: C ← C  B
-11: return b
-0
-, C
-12: end procedure
-*/
+
 static void SUB_AbB(const bi_word* A, const bi_word* B, bi_word* b, bi_word* C)
 {
     bi_word n_b=0;

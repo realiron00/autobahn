@@ -1,7 +1,33 @@
-#include "autobahn_common.h"
+#include "autobahn.h"
 
 int main()
 {
+    bi* x = NULL;
+    bi* y = NULL;
+
+    bi_new(&x, 1);
+    bi_new(&y, 1);
+    x->a[0]=0x1234;
+    y->a[0]=0x5678;
+    printf("Sign: %u\n", x->sign);
+	printf("Dmax: %u\n", x->dmax);
+	printf("Digits: ");
+	for (int i = 0; i < x->dmax; i++) {
+		printf("0x%x ", x->a[i]);
+	}
+	printf("\n");
+    printf("4. copy big integer\n");
+	printf("Sign: %u\n", y->sign);
+	printf("Dmax: %u\n", y->dmax);
+	printf("Digits: ");
+	for (int i = 0; i < y->dmax; i++) {
+		printf("0x%x ", y->a[i]);
+	}
+	printf("\n");
+    bi* z = NULL;
+    SUB(x, y, z);
+    
+    /*
 	bi* x = NULL;
 	bi* y = NULL;
 	
@@ -57,4 +83,5 @@ int main()
 		printf("5. Big integer deleted successfully.\n");
 
 	return 0;
+    */
 }
