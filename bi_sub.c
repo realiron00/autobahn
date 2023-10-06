@@ -4,18 +4,13 @@ static void SUB_AbB(const bi_word* A, const bi_word* B, bi_word* b, bi_word* C)
 {
 
 }
-/*
-1: procedure SUBC(A, B) . A ≥ B > 0
-2: Bj ← 0 for j = m, m + 1, . . . , n − 1
-3: b ← 0
-4: for j = 0 to n − 1 do
-5: b, Cj ← SUBAbB(Aj , b, Bj )
-6: end for
-7: l ← min{j : Cn−1 = Cn−2 = · · · = Cj = 0}
-8: return Pl−1
-j=0 CjWj
-9: end procedure
-*/
+
+/**************************************************************
+*   두 큰 양의 정수의 뺄셈을 해주는 함수(A-B=Z)(A>=B>0)
+* 
+*   A,B : 뺄셈을 할 빅넘버 구조체 주소를 담을 공간.
+*   Z : 뺄셈의 결과를 담을 빅넘버 구조체 주소를 담을 공간.
+**************************************************************/
 static void SUBC(bi* A, bi* B, bi* Z)
 {
     if (B->dmax != A->dmax) {// 크기가 다르면 할당
