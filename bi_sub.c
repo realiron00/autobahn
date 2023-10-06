@@ -1,17 +1,24 @@
 #include "autobahn.h"
 
+/**************************************************************
+*   borrow를 이용한 블록별 뺄셈을 해주는 함수(A-b-B=C)(A>=B>0)
+*
+*   A,B : 뺄셈을 할 빅넘버 값 주소를 담을 공간.
+*   b : borrow 값 주소를 담을 공간.
+*   C : 뺄셈의 결과를 담을 빅넘버 값 주소를 담을 공간.
+**************************************************************/
 static void SUB_AbB(const bi_word* A, const bi_word* B, bi_word* b, bi_word* C)
 {
-    bi_word n_b=0;
+    bi_word n_b=0; //n_b: next borrow
 
-    *C = *A - *b;
-    n_b=(*A < *b);
+    *C = *A - *b; //A-b mod 2^32
 
-    n_b+=(*C < *B);
+    n_b=(*A < *b); //A<b이면 borrow 발생
+    n_b+=(*C < *B); //A-b<B이면 borrow 발생
 
-    *C-=*B;
+    *C-=*B; //A-b-B mod 2^32
 
-    *b=n_b;
+    *b=n_b; //b=next borrow
 }
 
 /**************************************************************
