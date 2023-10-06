@@ -4,6 +4,6 @@
 #include "autobahn_common.h"
 
 void ADD(bi* A, bi* B, bi* Z);
-void SUB(bi* A, bi* B, bi* Z);
+void bi_sub(bi* z, bi* x, bi* y);
 
 #endif
