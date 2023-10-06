@@ -1,6 +1,6 @@
 #include "autobahn.h"
 
-void SUB_AbB(const bi_word* A, const bi_word* B, bi_word* b, bi_word* C)
+static void SUB_AbB(const bi_word* A, const bi_word* B, bi_word* b, bi_word* C)
 {
 
 }
@@ -16,12 +16,24 @@ void SUB_AbB(const bi_word* A, const bi_word* B, bi_word* b, bi_word* C)
 j=0 CjWj
 9: end procedure
 */
-void SUBC(bi* A, bi* B, bi* Z)
+static void SUBC(bi* A, bi* B, bi* Z)
 {
     if (B->dmax != A->dmax) {// 크기가 다르면 할당
 		(B->a) = (bi_word*)realloc(B->a, (A->dmax) * sizeof(bi_word)); // B의 dmax 할당
 	}
     bi_word b=0, C=0;
+    bi* sub= NULL;
+    bi_new(&sub, A->dmax);
+
+    for (int j=0;j<A->dmax;j++) {
+        SUB_AbB(&(A->a[j]), &(B->a[j]), &b, &C);
+        sub->a[j]=C;
+        C=0;
+    }
+    bi_refine(B);
+    bi_refine(sub);
+    bi_cpy(&Z, sub);
+    bi_delete(&sub);
 }
 
 /**************************************************************
@@ -32,40 +44,31 @@ void SUBC(bi* A, bi* B, bi* Z)
 **************************************************************/
 void SUB(bi* A, bi* B, bi* Z)
 {
-    //A=0 -> 0-B=Z
-	if (bi_is_zero(A)) {
+	if (bi_is_zero(A)) { //A=0 -> 0-B=Z
         //Z=-B
 		bi_cpy(&Z, B);
         if(B->sign==POSITIVE) Z->sign=NEGATIVE;
         else Z->sign=POSITIVE;
 		return;
 	}
-	
-    //B=0 -> A-0=Z
-	if (bi_is_zero(B)) {
+	if (bi_is_zero(B)) { //B=0 -> A-0=Z
         //Z=A
 		bi_cpy(&Z, A);
         return;
 	}
-	
-    //A=B -> A-B=0
-	if (bi_cmp(A,B)==0){
+	if (bi_cmp(A,B)==0){ //A=B -> A-B=0
         //Z=0
 		bi_set_zero(Z);
 		return;
 	}
-		
-	//0<A,B
-    if (A->sign, B->sign == POSITIVE) {
-        //0<B<A
-        if (bi_cmp(A,B)==1) {
+	
+    if (A->sign, B->sign == POSITIVE) { //0<A,B
+        if (bi_cmp(A,B)==1) { //0<B<A
             //Z=A-B
             SUBC(A,B,Z);
             return;
         }
-
-        //0<B<A
-        else {
+        else { //0<B<A
             //Z=-(B-A)
             SUBC(B,A,Z);
             Z->sign=NEGATIVE;
@@ -73,17 +76,13 @@ void SUB(bi* A, bi* B, bi* Z)
         }
     }
 
-    //0>A,B
-    else if(A->sign, B->sign == NEGATIVE) {
-        //0>A>B
-        if (bi_cmp(A,B)==1) {
+    else if(A->sign, B->sign == NEGATIVE) { //0>A,B
+        if (bi_cmp(A,B)==1) { //0>A>B
             //Z=|B|-|A|
             SUBC(B,A,Z);
             return;
         }
-
-        //0>B>A
-        else {
+        else { //0>B>A
             //Z=-(|A|-|B|)
             SUBC(B,A,Z);
             Z->sign=NEGATIVE;
@@ -91,15 +90,13 @@ void SUB(bi* A, bi* B, bi* Z)
         }
     }
 
-    //A>0, B<0
-    else if(A->sign==POSITIVE && B->sign==NEGATIVE) {
+    else if(A->sign==POSITIVE && B->sign==NEGATIVE) { //A>0, B<0
         //Z=A+|B|
         ADD(A,B,Z);
         return;
     }
 
-    //A<0, B>0
-    else if(A->sign==NEGATIVE && B->sign==POSITIVE) {
+    else if(A->sign==NEGATIVE && B->sign==POSITIVE) { //A<0, B>0
         //Z=-(|A|+B)
         ADD(A,B,Z);
         Z->sign=NEGATIVE;

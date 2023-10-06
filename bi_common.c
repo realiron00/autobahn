@@ -33,7 +33,7 @@ void bi_new(bi** x, bi_word dmax)
 
 	//구조체 x의 메모리 할당
 	*x = (bi*)malloc(sizeof(bi));
-	(*x)->sign = POSITIVE; //! autobahn_common.h 에 POSITIVE, NEGATIVE 정의한 걸로 사용해주세요. sign = 0 (x) --> sign = POSITIVE (o) 아래에 있는 코드도 전부 수정 바람.
+	(*x)->sign = POSITIVE;
 	(*x)->dmax = dmax;
 
 	//배열의 길이만큼 x.a의 메모리 할당
@@ -101,7 +101,7 @@ void bi_cpy(bi** y, const bi* x)
 *	x, y : 비교할 빅넘버 구조체 주소를 담을 공간.
 *   반환값 : x가 y보다 크다면 1, x와 y가 같다면 0, x가 y보다 작다면 -1을 반환.
 **************************************************************/
-bi_word bi_cmpABS(const bi* x, const bi* y)
+static bi_word bi_cmpABS(const bi* x, const bi* y)
 {
 	bi_word x_dmax = x->dmax;
 	bi_word y_dmax = y->dmax;
