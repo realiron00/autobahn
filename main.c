@@ -7,8 +7,8 @@ int main()
 
     bi_new(&x, 1);
     bi_new(&y, 1);
-    x->a[0]=0x1234;
-    y->a[0]=0x5678;
+    x->a[0]=0x5678;
+    y->a[0]=0x1234;
     printf("Sign: %u\n", x->sign);
 	printf("Dmax: %u\n", x->dmax);
 	printf("Digits: ");
@@ -25,7 +25,17 @@ int main()
 	}
 	printf("\n");
     bi* z = NULL;
-    SUB(x, y, z);
+	bi_new(&z, 1);
+    bi_sub(z,x,y);
+
+	printf("66666. copy big integer\n");
+	printf("Sign: %u\n", z->sign);
+	printf("Dmax: %u\n", z->dmax);
+	printf("Digits: ");
+	for (int i = 0; i < z->dmax; i++) {
+		printf("0x%x ", z->a[i]);
+	}
+	printf("\n");
     
     /*
 	bi* x = NULL;

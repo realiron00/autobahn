@@ -27,18 +27,18 @@ static void sbb(bi_word* z, bi_word* b, const bi_word* x, const bi_word* y)
 *   x,y : 뺄셈을 할 빅넘버 구조체 주소를 담을 공간.
 *   z : 뺄셈의 결과를 담을 빅넘버 구조체 주소를 담을 공간.
 **************************************************************/
-static void usub(bi* z, const bi* x, const bi* y)
+static void usub(bi* z, bi* x, bi* y)
 {
     //If dmax of y is different from that of x, allocate
     if (y->dmax != x->dmax) {
-		*(y->a) = (bi_word*)realloc(y->a, (x->dmax) * sizeof(bi_word)); // B의 dmax 할당
+		(y->a) = (bi_word*)realloc(y->a, (x->dmax) * sizeof(bi_word)); // B의 dmax 할당
 	}
     bi_word b=0, d=0;
     bi* sub= NULL;
     bi_new(&sub, x->dmax);
 
     for (int j=0;j<x->dmax;j++) {
-        SUB_AbB(&d, &b, &(x->a[j]), &(y->a[j]));
+        sbb(&d, &b, &(x->a[j]), &(y->a[j]));
         sub->a[j]=d;
         d=0;
     }
@@ -54,7 +54,7 @@ static void usub(bi* z, const bi* x, const bi* y)
 *   x,y : 뺄셈을 할 빅넘버 구조체 주소를 담을 공간.
 *   Z : 뺄셈의 결과를 담을 빅넘버 구조체 주소를 담을 공간.
 **************************************************************/
-void bi_sub(bi* z, const bi* x, const bi* y)
+void bi_sub(bi* z, bi* x, bi* y)
 {
     //x=0 -> 0-y=z
 	if (bi_is_zero(x)) {
@@ -99,13 +99,13 @@ void bi_sub(bi* z, const bi* x, const bi* y)
         //0>x>y
         if (bi_cmp(x,y)==1) {
             //z=|y|-|x|
-            SUBC(z,y,x);
+            usub(z,y,x);
             return;
         }
         //0>y>x
         else {
             //z=-(|x|-|y|)
-            SUBC(y,x,z);
+            usub(y,x,z);
             z->sign=NEGATIVE;
             return;
         }
