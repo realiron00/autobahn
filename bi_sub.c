@@ -1,4 +1,9 @@
 #include "autobahn.h"
+
+void SUB_AbB(const bi_word* A, const bi_word* B, bi_word* b, bi_word* C)
+{
+
+}
 /*
 1: procedure SUBC(A, B) . A ≥ B > 0
 2: Bj ← 0 for j = m, m + 1, . . . , n − 1
@@ -16,7 +21,7 @@ void SUBC(bi* A, bi* B, bi* Z)
     if (B->dmax != A->dmax) {// 크기가 다르면 할당
 		(B->a) = (bi_word*)realloc(B->a, (A->dmax) * sizeof(bi_word)); // B의 dmax 할당
 	}
-    bi_word b=0, B=0;
+    bi_word b=0, C=0;
 }
 
 /**************************************************************
