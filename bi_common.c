@@ -37,7 +37,6 @@ void bi_new(bi** x, bi_word dmax)
 	(*x)->dmax = dmax;
 
 	//배열의 길이만큼 x.a의 메모리 할당
-	//! 혹시 a에 쓰레기 값이 들어갈 가능성이 있나요? 없으면 그대로 두고 있으면 0으로 채워주세요. 주석으로 설명도 부탁드립니다.
 	(*x)->a = (bi_word*)calloc(dmax, sizeof(bi_word));
 }
 
