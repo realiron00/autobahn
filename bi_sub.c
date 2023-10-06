@@ -69,7 +69,7 @@ void SUB(bi* A, bi* B, bi* Z)
 	}
 	if (bi_cmp(A,B)==0){ //A=B -> A-B=0
         //Z=0
-		bi_set_zero(Z);
+		bi_set_zero(&Z);
 		return;
 	}
 	

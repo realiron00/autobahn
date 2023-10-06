@@ -43,7 +43,7 @@ typedef enum {
 
 // Define the big integer structure
 typedef struct {
-    sign sign;  // Sign of the big integer. Signed: 1, Unsigned: 0
+    sign sign;     // Sign of the big integer. Signed: 1, Unsigned: 0
     bi_word dmax;  // Maximum number of words in the array
     bi_word* a;    // Array of words representing the big integer
 } bi;
