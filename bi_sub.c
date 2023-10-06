@@ -1,34 +1,16 @@
 #include "autobahn.h"
 
-//x-y=z
-/*
-: procedure SUB(A, B)
-2: if A = 0 then
-3: return −B
-4: end if
-5: if B = 0 then
-6: return A
-7: end if
-8: if A = B then
-9: return 0
-10: end if
-11: if 0 < B ≤ A then
-12: return SUBC(A, B)
-13: else if 0 < A < B then
-14: return −SUBC(B, A)
-15: end if
-16: if 0 > A ≥ B then
-17: return SUBC(|B|, |A|)
-18: else if 0 > B > A then
-19: return −SUBC(|A|, |B|)
-20: end if
-21: if A > 0 and B < 0 then
-22: return ADD(A, |B|)
-23: else . Case: A < 0 and B > 0
-24: return −ADD(|A|, B)
-25: end if
-26: end procedure
-*/
+void SUBC(bi* A, bi* B, bi* Z)
+{
+    
+}
+
+/**************************************************************
+*	두 큰 정수의 뺄셈을 해주는 함수(A-B=Z)
+*
+*   A,B : 뺄셈을 할 빅넘버 구조체 주소를 담을 공간.
+*   Z : 뺄셈의 결과를 담을 빅넘버 구조체 주소를 담을 공간.
+**************************************************************/
 void SUB(bi* A, bi* B, bi* Z)
 {
 	if (bi_is_zero(A)) {
@@ -50,11 +32,11 @@ void SUB(bi* A, bi* B, bi* Z)
 		
 	if (A->sign, B->sign == POSITIVE) {
         if (bi_cmp(A,B)==1) {//A>B
-            bi_subc(A,B,Z);
+            SUBC(A,B,Z);
             return;
         }
         else {
-            bi_subc(B,A,Z);
+            SUBC(B,A,Z);
             Z->sign=NEGATIVE;
             return;
         }
@@ -62,12 +44,12 @@ void SUB(bi* A, bi* B, bi* Z)
 
     else if(A->sign, B->sign == NEGATIVE) {
         if (bi_cmp(A,B)==1) {//A>B
-            bi_subc(A,B,Z);
+            SUBC(A,B,Z);
             Z->sign=NEGATIVE;
             return;
         }
         else {
-            bi_subc(B,A,Z);
+            SUBC(B,A,Z);
             return;
         }
     }
