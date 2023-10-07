@@ -1,236 +1,481 @@
 #include "autobahn_common.h"
 
-// show base_hex
-void bi_show_hex(const bi* x) {
-
-	if (x->sign) {
-		printf("-");
-	}
-	printf("0x");
-
-	for (int i = x->dmax-1; i >= 0; i--) {
-		printf("%08x", x->a[i]);
-	}
-	printf("\n");
-}
-
-
-// show base_bin
-void bi_show_bin(const bi* x) {
-	for (int i = x->dmax-1; i >= 0; i--) {
-		for (int j = 31; j >= 0; j--) {
-			printf("%d", (x->a[i] >> j) & 1);
-		}
-		printf("\n");
-	}
-}
-
-// set array
-bi_word bi_set_by_arr(bi** x, const bi_word* a, sign sign, bi_word dmax){
-	bi_new(x, dmax);  // 새로운 구조체를 생성하고
-	(*x)->sign = sign; // 부호 저장
-	for (int i = 0; i<dmax;i++){ // 반복문을 돌리면서 array 배열을 새로운 구조체에 저장
-		(*x)->a[i] = a[i];
-	}
-	return 0;
-}
-
-bi_word bi_set_by_str(bi** x, const char* str, sign sign, base base) {
-    int length = strlen(str); // 문자열의 길이
-    int dmax = (length + 7) / 8; // 8개의 16진수 문자를 4바이트로 압축 
-
-    if (base != 16) {
-        printf("지원하지 않는 진법입니다.");
-        return -1;
-	}
-
-    bi_new(x, dmax);
-
-    (*x)->sign = sign;
-
-    for (int i = 0; i < dmax; i++) {
-        char temp[9]; // 8개의 16진수 문자를 저장할 임시 배열 (8글자 + NULL 종료 문자)
-        int start = i * 8;
-        int end = start + 8;
-        if (end > length) {
-            end = length;
-        }
-        strncpy(temp, str + start, end - start); // 문자열을 8글자씩 잘라서 temp에 복사
-        temp[end - start] = '\0';
-
-        // strtoul을 이용하여 구조체 배열에 저장
-        (*x)->a[i] = strtoul(temp, NULL, base);
-    }
-
-    return 0;
-}
-
-void bi_set_one(bi** x){ // Set One
-    bi_new(x,1); // 
-    (*x)->sign = 0; // 부호삭제
-    (*x)->a[0] = 1; // 비트 마스킹
-}
-
-//구조체를 삭제하는 함수
-void bi_delete(bi** x)
+/**
+ * @brief Initialize a new big integer.
+ * 
+ * This function initializes a new big integer structure, allocating memory for
+ * the structure and its associated digit array. The sign of the big integer is
+ * set to POSITIVE by default, and the maximum number of digits 'dmax' for the
+ * big integer is assigned. The digit array is also initialized with zeros.
+ *
+ * @param x Pointer to a pointer to a bi structure (output parameter) where the
+ *          newly created big integer will be stored.
+ * @param dmax Maximum number of digits for the big integer to accommodate.
+ *             This value determines the size of the digit array.
+ */
+void bi_new(bi** x, bi_uword dmax)
 {
-	//구조체가 이미 비어있을 경우, 반환
-	if (*x == NULL)
-		return;
-
-	//구조체의 메모리를 해제
-	free((*x)->a);
-	free(*x);
-
-	//댕글링 포인터를 방지하기 위해 NULL값을 삽입
-	*x = NULL;
-}
-
-//구조체를 생성하는 함수
-void bi_new(bi** x, bi_word dmax)
-{
-	//구조체에 어떤 값이 있을 경우, 해당 값을 삭제
+	//Delete the value in the structure if there is any
 	if (*x != NULL)
 		bi_delete(x);
 
-	//구조체 x의 메모리 할당
+	//Allocate memory for the structure x
 	*x = (bi*)malloc(sizeof(bi));
-	(*x)->sign = 0;
+	(*x)->sign = POSITIVE;
 	(*x)->dmax = dmax;
 
-	//배열의 길이만큼 x.a의 메모리 할당
-	(*x)->a = (bi_word*)calloc(dmax, sizeof(bi_word));
+	//Allocate memory for the array a
+	(*x)->a = (bi_uword*)calloc(dmax, sizeof(bi_uword));
 }
 
-//큰 수의 뒷부분에 있는 0값을 제거하는 함수
+/**
+ * @brief Free the memory used by a big integer.
+ * 
+ * This function deallocates the memory used by a big integer structure and its
+ * associated array of digits, pointed to by 'x'. It also sets 'x' to NULL to
+ * indicate that the big integer is no longer valid.
+ *
+ * @param x Pointer to a pointer to a bi structure (input/output parameter).
+ *          Upon successful deallocation, 'x' is set to NULL.
+ */
+void bi_delete(bi** x)
+{
+	//just return if the structure is already empty
+	if (*x == NULL)
+		return;
+
+	//free the memory of the structure
+	free((*x)->a);
+	free(*x);
+
+	//Insert NULL value to prevent dangling pointer
+	*x = NULL;
+}
+
+/**
+ * @brief Refine the big integer by removing leading zero digits.
+ * 
+ * Refining a big integer means removing any leading zero digits from its
+ * representation to make it more compact and efficient. This function
+ * iterates through the digits of the big integer 'x', starting from the
+ * most significant digit, and removes any leading zero digits until a
+ * non-zero digit or the last digit is encountered. The 'dmax' field of 'x'
+ * is updated to reflect the new maximum number of digits after refining.
+ * 
+ * @param x Pointer to a bi structure representing the big integer to refine.
+ */
 void bi_refine(bi* x)
 {
-	//구조체가 비어있을 경우, 반환
+	//just return if the structure is empty
 	if (x == NULL)
 		return;
 
-	//0이 아닌 부분의 배열 번호를 찾아냄
-	bi_word new_dmax = x->dmax;
+	//Find the index of the first non-zero value from the end of the array
+	bi_uword new_dmax = x->dmax;
 
-	while (new_dmax > 1) { //배열의 끝부분부터 0이 아닌 값이 나올 때까지 확인
-		if (x->a[new_dmax - 1] != 0) //0이 아닌 값이 나온 배열 번호를 new_dmax에 저장
+	//Check from the end of the array to the beginning until a non-zero value is found
+	while (new_dmax > 1) {
+		//Save the index of the first non-zero value to new_dmax
+		if (x->a[new_dmax - 1] != 0)
 			break;
 		new_dmax--;
 	}
 
-	//0이 아닌 부분만 메모리 재할당
+	//If the index of the first non-zero value is different from the original dmax, change the dmax and reallocate the memory
 	if (x->dmax != new_dmax) {
 		x->dmax = new_dmax;
-		x->a = (bi_word*)realloc(x->a, sizeof(bi_word) * new_dmax);
+		x->a = (bi_uword*)realloc(x->a, sizeof(bi_uword) * new_dmax);
 	}
 
-	//a의 값이 0일 경우, a를 0으로 정함
+	//If the value of the first non-zero value is 0, change the sign to POSITIVE(a=0)
 	if ((x->dmax == 1) && (x->a[0] == 0)) {
-		x->sign = 0;
+		x->sign = POSITIVE;
 	}
 }
 
-//구조체 y에 구조체 x를 복사해주는 함수
+/**
+ * @brief Display the big integer in binary format.
+ * 
+ * This function displays the binary representation of the big integer 'x' to
+ * the standard output (console). Each digit of the big integer is represented
+ * as a sequence of binary digits (bits), starting from the most significant
+ * digit and ending with the least significant digit. Leading zero bits are
+ * included to maintain the specified maximum number of digits ('dmax'). The
+ * binary digits are separated by spaces for readability.
+ * 
+ * For example, if 'x' is 9 (in decimal) with 'dmax' set to 8, the output
+ * will be "00001001" in binary format.
+ * 
+ * @param x Pointer to a bi structure representing the big integer to display.
+ */
+void bi_show_bin(const bi* x)
+{
+    // Check if the "bi" is negative and print a minus sign if it is.
+    if (x->sign)
+        printf("-");
+
+    // Display the number in binary notation.
+    printf("0b");
+
+    // Iterate through the elements of the "a" array in the "bi" structure.
+    for (int i = x->dmax - 1; i >= 0; i--)
+    {
+        // Iterate through the bits within each element.
+        for (int j = sizeof(bi_word) * 8 - 1; j >= 0; j--)
+        {
+            // Print each bit of the "bi" number by shifting and masking.
+            printf("%d", (x->a[i] >> j) & 1);
+        }
+    }
+
+    // Print a newline character to end the output.
+    printf("\n");
+}
+
+//TODO DH 구현 예정
+/**
+ * @brief Display the big integer in hexadecimal format.
+ * 
+ * This function displays the hexadecimal representation of the big integer 'x'
+ * to the standard output (console). Each digit of the big integer is represented
+ * as a hexadecimal character (0-9, A-F), starting from the most significant digit
+ * and ending with the least significant digit. Leading zero digits are included
+ * to maintain the specified maximum number of digits ('dmax').
+ * 
+ * For example, if 'x' is 255 (in decimal) with 'dmax' set to 4, the output
+ * will be "00FF" in hexadecimal format.
+ * 
+ * @param x Pointer to a bi structure representing the big integer to display.
+ */
+void bi_show_hex(const bi* x) 
+{
+	// Check negative
+    if (x->sign) 
+		printf("-");
+
+	// Display in hexadecimal notation.
+    printf("0x");
+    
+	// Print to hexadecimal.
+    for (int i = x->dmax - 1; i >= 0; i--)
+        printf("%x", x->a[i]);
+
+    printf("\n");
+}
+
+/**
+ * @brief Set a big integer from an array of words.
+ * 
+ * This function initializes a big integer 'x' with the values from an array of
+ * 'dmax' words ('arr') representing the big integer's digits. The 'sign'
+ * parameter determines whether 'x' is positive or negative. The function allocates
+ * memory for the big integer 'x' and copies the values from the 'arr' into its
+ * digit array. If 'dmax' is greater than the actual number of digits in 'arr',
+ * leading digits are set to zero.
+ * 
+ * @param x Pointer to a pointer to a bi structure (output parameter) where the
+ *          newly created big integer will be stored.
+ * @param arr Array of bi_uword representing the big integer's digits.
+ * @param sign Sign of the big integer (POSITIVE or NEGATIVE).
+ * @param dmax Maximum number of digits for the big integer. This value determines
+ *             the size of the big integer's digit array.
+ */
+void bi_set_by_arr(bi** x, const bi_uword* a, sign sign, bi_uword dmax)
+{
+    // Create a new big integer with the specified maximum number of words.
+    bi_new(x, dmax); 
+    
+    // Set the sign of the big integer.
+    (*x)->sign = sign; 
+    
+    // Copy the elements from the input array to the big integer's data array.
+    for (bi_word i = 0; i < dmax; i++)
+        (*x)->a[i] = a[i];
+}
+
+/**
+ * @brief Set a big integer from a hexadecimal string representation.
+ * 
+ * This function initializes a big integer 'x' with the values parsed from a hexadecimal
+ * format string 'str'. The 'sign' parameter determines whether 'x' is positive or negative.
+ * The function allocates memory for the big integer 'x' and parses the string 'str' to populate
+ * its digit array. Each chunk of hexadecimal digits in 'str' (with a size of 2 characters per
+ * chunk) is converted to a bi_uword and stored in the big integer's array. If 'str' contains
+ * characters that are not valid hexadecimal digits, the behavior is undefined.
+ * 
+ * @param x Pointer to a pointer to a bi structure (output parameter) where the newly created
+ *          big integer will be stored.
+ * @param str Hexadecimal string representation of the big integer.
+ * @param sign Sign of the big integer (POSITIVE or NEGATIVE).
+ */
+static void bi_set_by_str_hex(bi** x, const char* str, sign sign)
+{
+    // Calculate the length of the input string 'str'.
+    bi_uword len = (bi_uword)strlen(str);
+
+    // Calculate the number of bi_uword elements required to store the hexadecimal digits.
+    bi_uword new_dmax = (len - 1) / (sizeof(bi_uword) * 2) + 1;
+
+    // Allocate memory for the big integer.
+    bi_new(x, new_dmax);
+
+    // Check if memory allocation was successful.
+    if (*x == NULL) {
+        fprintf(stderr, "Error: Memory allocation failed.\n");
+        exit(1);
+    }
+
+    // Set the sign of the big integer.
+    (*x)->sign = sign;
+
+    for (int i = 0; i < (*x)->dmax; i++) 
+    {
+        // Calculate the size of each chunk of hexadecimal digits (2 characters per chunk).
+        bi_uword chunk_size = sizeof(bi_uword) * 2;
+
+        // Create a buffer to store the chunk of hexadecimal digits.
+        char* buf = malloc(chunk_size + 1);
+        
+        // Copy a chunk of hexadecimal digits from the input string to buf.
+        strncpy(buf, str + i * chunk_size, chunk_size);
+
+        // Null-terminate the buffer to ensure proper string conversion.
+        buf[chunk_size] = '\0';
+
+        // Convert the chunk to a bi_uword and store it in the big integer's array.
+        (*x)->a[i] = strtoul(buf, NULL, HEXADECIMAL);
+    }
+}
+
+//TODO 나중에 구현하자
+static void bi_set_by_str_dec(bi** x, const char* str, sign sign)
+{
+	fprintf(stderr, "지원하지 않는 기능입니다.\n");
+    exit(1);
+}
+
+//TODO 나중에 구현하자
+static void bi_set_by_str_bin(bi** x, const char* str, sign sign)
+{
+	fprintf(stderr, "지원하지 않는 기능입니다.\n");
+    exit(1);
+}
+
+/**
+ * @brief Set a big integer from a string representation.
+ * 
+ * This function initializes a big integer 'x' with the values parsed from a string
+ * 'str' representing the big integer in the specified numerical 'base'. The 'sign'
+ * parameter determines whether 'x' is positive or negative. The function allocates
+ * memory for the big integer 'x' and parses the string 'str' to populate its digit
+ * array. The 'base' parameter indicates the numerical base of 'str' (BINARY, DECIMAL,
+ * or HEXADECIMAL). If 'str' contains characters that are not valid digits in the
+ * specified base, the behavior is undefined.
+ * 
+ * @param x Pointer to a pointer to a bi structure (output parameter) where the
+ *          newly created big integer will be stored.
+ * @param str String representation of the big integer.
+ * @param sign Sign of the big integer (POSITIVE or NEGATIVE).
+ * @param base Numerical base of the string representation (BINARY, DECIMAL, or HEXADECIMAL).
+ */
+void bi_set_by_str(bi** x, const char* str, sign sign, base base) 
+{	
+	// Call the function for hexadecimal input.
+    if (base == HEXADECIMAL)
+        bi_set_by_str_hex(x, str, sign);
+
+	// Call the function for decimal input.
+    else if (base == DECIMAL)
+        bi_set_by_str_dec(x, str, sign);
+
+	// Call the function for binary input.
+    else if (base == BINARY)
+        bi_set_by_str_bin(x, str, sign);
+
+	// Print an error message and exit the program with an error code.
+	else
+	{
+        fprintf(stderr, "Error: Invalid base specified for string representation.\n");
+        exit(1);
+	}
+}
+
+/**
+ * @brief Set a big integer to zero.
+ * 
+ * This function initializes a big integer 'x' and sets its value to zero.
+ * It allocates memory for the big integer structure, sets the sign to
+ * POSITIVE, and initializes the digit array to all zeros. After calling
+ * this function, 'x' will represent the value zero with a specified maximum
+ * number of digits ('dmax').
+ * 
+ * @param x Pointer to a pointer to a bi structure (output parameter) where
+ *          the newly created big integer representing zero will be stored.
+ */
+void bi_set_zero(bi** x)
+{
+    // Allocate memory for a new "bi" (big integer) and initialize it to 1.
+    bi_new(x, 1);
+
+    // Set the sign of the "bi" to positive (0 means positive, 1 means negative).
+    (*x)->sign = 0;
+
+    // Set the value of the "bi" to 0.
+    (*x)->a[0] = 0;
+}
+
+/**
+ * @brief Set a big integer to the value one.
+ * 
+ * This function initializes a big integer 'x' and sets its value to one.
+ * It allocates memory for the big integer structure, sets the sign to
+ * POSITIVE, and initializes the digit array with a single digit '1'.
+ * After calling this function, 'x' will represent the value one with a
+ * specified maximum number of digits ('dmax').
+ * 
+ * @param x Pointer to a pointer to a bi structure (output parameter) where
+ *          the newly created big integer representing one will be stored.
+ */
+void bi_set_one(bi** x)
+{
+    // Allocate memory for a new "bi" (big integer) and initialize it to 1.
+    bi_new(x, 1);
+
+    // Set the sign of the "bi" to positive (0 means positive, 1 means negative).
+    (*x)->sign = 0;
+
+    // Set the value of the "bi" to 1.
+    (*x)->a[0] = 1;
+}
+
+/**
+ * @brief Copy the value of one big integer to another.
+ * 
+ * This function creates a copy of the big integer 'x' and stores it in the
+ * big integer 'y'. It allocates memory for the new big integer 'y' and
+ * duplicates the value and properties (sign, dmax, digit array) of 'x'.
+ * After calling this function, 'y' will be an independent copy of 'x'.
+ * 
+ * @param y Pointer to a pointer to a bi structure (output parameter) where
+ *          the copy of the big integer 'x' will be stored.
+ * @param x Pointer to a bi structure representing the big integer to be copied.
+ */
 void bi_cpy(bi** y, const bi* x)
 {
-	//구조체 y에 어떤 값이 있을경우, 해당 값을 삭제
+	//Delete the value in the structure if there is any in y
 	if (*y != NULL)
 		bi_delete(y);
 
-	//구조체 x의 배열의 길이만큼 구조체를 생성
+	//Create a new structure y with the same dmax as x
 	bi_new(y, x->dmax);
 
-	//구조체 y에 x의 데이터 복사
+	//Copy the data from structure x to structure y
 	(*y)->sign = x->sign;
-	for (bi_word i = 0; i < x->dmax; i++) {
+	for (int i = 0; i < x->dmax; i++)
 		(*y)->a[i] = x->a[i];
-	}
 }
 
-//두 큰 음이 아닌 정수의 대수비교를 해주는 함수
-/*
-x가 y보다 크다면:	1을 반환
-x와 y가 같다면:		0을 반환
-x가 y보다 작다면:	-1을 반환
-*/
-bi_word bi_cmpABS(const bi* x, const bi* y)
+/**
+ * @brief Compare two big integers (absolute values) and return the result.
+ *
+ * This function compares the absolute values of two big integers 'x' and 'y'
+ * and returns the result as a bi_word. The bi_word represents the relationship
+ * between the magnitudes of the two big integers.
+ *
+ * @param x Pointer to the first big integer to compare.
+ * @param y Pointer to the second big integer to compare.
+ * @return bi_word Result of the comparison:
+ *                - Positive value (1) if |x| is greater than |y|.
+ *                - Negative value (-1) if |y| is greater than |x|.
+ *                - Zero (0) if |x| and |y| are equal in magnitude.
+ */
+static bi_word bi_cmpABS(const bi* x, const bi* y)
 {
 	bi_word x_dmax = x->dmax;
 	bi_word y_dmax = y->dmax;
 
-	//x의 자릿수가 y보다 크다면, 1을 반환
+	//Return 1 if x's dmax is bigger than y's dmax
 	if (x_dmax > y_dmax)
 		return 1;
 	
-	//y의 자릿수가 x보다 크다면, -1을 반환
+	//Return -1 if y's dmax is bigger than x's dmax
 	else if (x_dmax < y_dmax)
 		return -1;
 
-	//자릿수가 같을 때, 각 자리의 값을 비교
+	//if x_dmax == y_dmax, compare each digit
 	for (int i = x_dmax-1; i >= 0; i--) {
-		//자리의 값이 x가 크다면, 1을 반환
+		//Return 1 if the value of the digit in x is bigger than the value of the digit in y
 		if (x->a[i] > y->a[i])
 			return 1;
 
-		//자리의 값이 y가 크다면, -1을 반환
+		//Return -1 if the value of the digit in y is bigger than the value of the digit in x
 		else if (x->a[i] < y->a[i])
 			return -1;
 	}
-	//모든 자리의 값이 같다면, 0을 반환
+	//if all the digits are the same, return 0
 	return 0;
 }
 
-//두 큰 정수의 대수비교를 해주는 함수
-/*
-x가 y보다 크다면:	1을 반환
-x와 y가 같다면:		0을 반환
-x가 y보다 작다면:	-1을 반환
-*/
+/**
+ * @brief Compare two big integers and return the result
+ * 
+ * @param x Pointer to a bi structure.
+ * @param y Pointer to a bi structure to be compared with x.
+ * @return bi_word Result of the comparison (negative, zero, or positive).
+ */
 bi_word bi_cmp(const bi* x, const bi* y) 
 {
-	//x가 양수고 y가 음수라면, 1을 반환
-	if (x->sign == 0 && y->sign == 1)
+	//Return 1 if x is positive and y is negative
+	if (x->sign == POSITIVE && y->sign == NEGATIVE)
 		return 1;
 
-	//x가 음수고 y가 양수라면, -1을 반환
-	if (x->sign == 1 && y->sign == 0)
+	//Return -1 if x is negative and y is positive
+	if (x->sign == NEGATIVE && y->sign == POSITIVE)
 		return -1;
 
-	//x와 y의 절댓값을 비교
+	//Compare the absolute values of x and y
 	bi_word ret = bi_cmpABS(x, y);
 	
-	//두 수가 양수라면, 절댓값을 비교한대로 반환
-	if (x->sign == 0)
+	//If x and y are both positive, return the value of the absolute value comparison
+	if (x->sign == POSITIVE)
 		return ret;
 
-	//두 수가 음수라면, 절댓값을 비교한 것의 반대로 반환
+	//If x and y are both negative, return the opposite value of the absolute value comparison
 	else
 		return ret * (-1);
 }
 
-// is zero
-bool bi_is_zero(const bi* x){ // Is Zero? - case :mul
-	if (x->sign == 1 || x->a[0] !=0 ) // 음수 부호가 있거나 값이 있으면
-		return false;
-	return true;
+/**
+ * @brief Check if a big integer is equal to zero.
+ * 
+ * This function determines whether the value of the big integer 'x' is equal
+ * to zero. It examines the digit array of 'x' and returns 'true' if all digits
+ * are zero, indicating that 'x' represents the value zero. Otherwise, it returns
+ * 'false' to indicate that 'x' is not zero.
+ * 
+ * @param x Pointer to a bi structure representing the big integer to check.
+ * @return 'true' if the big integer 'x' is equal to zero, 'false' otherwise.
+ */
+bool bi_is_zero(const bi* x)
+{ 
+	// Chek zero in arr [ 0 ]
+	return (x->dmax != 1 || x->a[0] !=0 ) ? (false) : (true);
 }
 
-
-// is one
-bool bi_is_one(const bi* x){ // Is One? - case : add 
-	if (x->sign == 1 || x->a[0] !=0 ) // 음수 부호가 있거나 블럭단위로 저장했을떄 값이 있으면 False
-		return false;
-	return true; // True값이 나오면 add션 할때 그냥 값을 리턴
-}
-
-
-// Set Zero
-void bi_set_zero(bi** x){ 
-	
-    bi_new(x,1); // 배열 생성
-	
-    (*x)->sign = POSITIVE; // 부호 결정 
-	
-    (*x)->a[0] = 0; // 값 입력
-
+/**
+ * @brief Check if a big integer is equal to one.
+ * 
+ * This function determines whether the value of the big integer 'x' is equal
+ * to one. It examines the digit array of 'x' and returns 'true' if 'x' represents
+ * the value one. Specifically, 'x' is considered to represent one if it has a
+ * single non-zero digit (1) at the least significant position and all other
+ * digits are zero. Otherwise, it returns 'false' to indicate that 'x' is not one.
+ * 
+ * @param x Pointer to a bi structure representing the big integer to check.
+ * @return 'true' if the big integer 'x' is equal to one, 'false' otherwise.
+ */
+bool bi_is_one(const bi* x)
+{ 
+	// Chek zero in arr [ 1 ]
+	return (x->dmax != 1 || x->a[0] != 1 ) ? (false) : (true);
 }
