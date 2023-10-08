@@ -234,16 +234,19 @@ static void bi_set_by_str_hex(bi** x, const char* str, sign sign)
         bi_uword chunk_size = sizeof(bi_uword) * 2;
 
         // Create a buffer to store the chunk of hexadecimal digits.
-        char* buf = malloc(chunk_size + 1);
+        char* chunk = (char*)malloc(chunk_size + 1);
         
-        // Copy a chunk of hexadecimal digits from the input string to buf.
-        strncpy(buf, str + i * chunk_size, chunk_size);
+        // Copy a chunk of hexadecimal digits from the input string to chunk.
+        strncpy(chunk, str + i * chunk_size, chunk_size);
 
         // Null-terminate the buffer to ensure proper string conversion.
-        buf[chunk_size] = '\0';
+        chunk[chunk_size] = '\0';
 
         // Convert the chunk to a bi_uword and store it in the big integer's array.
-        (*x)->a[i] = strtoul(buf, NULL, HEXADECIMAL);
+        (*x)->a[i] = strtoul(chunk, NULL, HEXADECIMAL);
+		
+		// Free the memory allocated for the chunk.
+    	free(chunk);
     }
 }
 
