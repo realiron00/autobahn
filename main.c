@@ -5,15 +5,17 @@ int main()
     bi* x = NULL;
     bi* y = NULL;
 
-    bi_new(&x, 1);
-    bi_new(&y, 1);
-    x->a[0]=0x5678;
-    y->a[0]=0x1234;
+    bi_new(&x, 2);
+    bi_new(&y, 2);
+    x->a[0]=5678;
+	x->a[1]=1234;
+    y->a[0]=4567;
+	y->a[1]=623;
     printf("Sign: %u\n", x->sign);
 	printf("Dmax: %u\n", x->dmax);
 	printf("Digits: ");
 	for (int i = 0; i < x->dmax; i++) {
-		printf("0x%x ", x->a[i]);
+		printf("%d ", x->a[i]);
 	}
 	printf("\n");
     printf("4. copy big integer\n");
@@ -21,7 +23,7 @@ int main()
 	printf("Dmax: %u\n", y->dmax);
 	printf("Digits: ");
 	for (int i = 0; i < y->dmax; i++) {
-		printf("0x%x ", y->a[i]);
+		printf("%d ", y->a[i]);
 	}
 	printf("\n");
     bi* z = NULL;
@@ -33,7 +35,7 @@ int main()
 	printf("Dmax: %u\n", z->dmax);
 	printf("Digits: ");
 	for (int i = 0; i < z->dmax; i++) {
-		printf("0x%x ", z->a[i]);
+		printf("%d ", z->a[i]);
 	}
 	printf("\n");
     

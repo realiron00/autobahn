@@ -13,8 +13,8 @@ static void sbb(bi_word* z, bi_word* b, const bi_word* x, const bi_word* y)
 
     *z = *x - *b; //x-b mod 2^32
 
-    n_b=(*x < *b); //x<b이면 borrow 발생
-    n_b+=(*z < *y); //x-b<y이면 borrow 발생
+    n_b=(*x < *b); //occurs borrow if x<b
+    n_b+=(*z < *y); //occurs borrow if x-b<y
 
     *z-=*y; //x-b-y mod 2^32
 
@@ -31,19 +31,27 @@ static void usub(bi* z, bi* x, bi* y)
 {
     //If dmax of y is different from that of x, allocate
     if (y->dmax != x->dmax) {
-		(y->a) = (bi_word*)realloc(y->a, (x->dmax) * sizeof(bi_word)); // B의 dmax 할당
+        //allocate dmax of x to dmax of y
+		(y->a) = (bi_word*)realloc(y->a, (x->dmax) * sizeof(bi_word)); 
 	}
-    bi_word b=0, d=0;
+    
+    bi_word b=0, d=0; //b: borrow, d: result of subtraction(one block)
+
+    //make sub to store result of subtraction
     bi* sub= NULL;
-    bi_new(&sub, x->dmax);
+    bi_new(&sub, x->dmax); //allocate dmax of x to sub
 
     for (int j=0;j<x->dmax;j++) {
+        //subtraction of each block
         sbb(&d, &b, &(x->a[j]), &(y->a[j]));
-        sub->a[j]=d;
-        d=0;
+        sub->a[j]=d; //store result of subtraction to sub
+        d=0; //initialize d
     }
+
     bi_refine(y);
     bi_refine(sub);
+
+    //copy sub to z
     bi_cpy(&z, sub);
     bi_delete(&sub);
 }
@@ -85,8 +93,8 @@ void bi_sub(bi* z, bi* x, bi* y)
             usub(z,x,y);
             return;
         }
-        //0<y<x
-        else { //0<y<x
+        //0<x<y
+        else {
             //z=-(y-x)
             usub(z,y,x);
             z->sign=NEGATIVE;
