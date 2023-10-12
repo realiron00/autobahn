@@ -2,6 +2,7 @@
 
 int main()
 {
+	/*
     bi* x = NULL;
     bi* y = NULL;
 
@@ -38,10 +39,11 @@ int main()
 		printf("%d ", z->a[i]);
 	}
 	printf("\n");
+    */
     
-    /*
 	bi* x = NULL;
 	bi* y = NULL;
+	
 	
 	//[1] bi_new 함수 테스트
 	bi_new(&x, 8);
@@ -95,5 +97,5 @@ int main()
 		printf("5. Big integer deleted successfully.\n");
 
 	return 0;
-    */
+    
 }
