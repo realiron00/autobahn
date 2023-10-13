@@ -90,13 +90,13 @@ void bi_sub(bi** z, bi* x, bi* y)
         //0<y<x
         if (bi_cmp(x,y)==1) {
             //z=x-y
-            usub(&z,x,y);
+            usub(z,x,y);
             return;
         }
         //0<x<y
         else {
             //z=-(y-x)
-            usub(&z,y,x);
+            usub(z,y,x);
             (*z)->sign=NEGATIVE;
             return;
         }
@@ -107,13 +107,13 @@ void bi_sub(bi** z, bi* x, bi* y)
         //0>x>y
         if (bi_cmp(x,y)==1) {
             //z=|y|-|x|
-            usub(&z,y,x);
+            usub(z,y,x);
             return;
         }
         //0>y>x
         else {
             //z=-(|x|-|y|)
-            usub(&z,x,y);
+            usub(z,x,y);
             (*z)->sign=NEGATIVE;
             return;
         }
@@ -122,14 +122,14 @@ void bi_sub(bi** z, bi* x, bi* y)
     //x>0, y<0
     else if(x->sign==POSITIVE && y->sign==NEGATIVE) {
         //z=x+|y|
-        bi_add(&z,x,y);
+        bi_add(z,x,y);
         return;
     }
 
     //x<0, y>0
     else if(x->sign==NEGATIVE && y->sign==POSITIVE) {
         //z=-(|x|+y)
-        bi_add(&z,x,y);
+        bi_add(z,x,y);
         (*z)->sign=NEGATIVE;
         return;
     }
