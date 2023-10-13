@@ -27,7 +27,7 @@ static void sbb(bi_word* z, bi_word* b, const bi_word* x, const bi_word* y)
 *   x,y : 뺄셈을 할 빅넘버 구조체 주소를 담을 공간.
 *   z : 뺄셈의 결과를 담을 빅넘버 구조체 주소를 담을 공간.
 **************************************************************/
-static void usub(bi* z, bi* x, bi* y)
+static void usub(bi** z, bi* x, bi* y)
 {
     //If dmax of y is different from that of x, allocate
     if (y->dmax != x->dmax) {
@@ -52,7 +52,7 @@ static void usub(bi* z, bi* x, bi* y)
     bi_refine(sub);
 
     //copy sub to z
-    bi_cpy(&z, sub);
+    bi_cpy(z, sub);
     bi_delete(&sub);
 }
 
@@ -62,26 +62,26 @@ static void usub(bi* z, bi* x, bi* y)
 *   x,y : 뺄셈을 할 빅넘버 구조체 주소를 담을 공간.
 *   Z : 뺄셈의 결과를 담을 빅넘버 구조체 주소를 담을 공간.
 **************************************************************/
-void bi_sub(bi* z, bi* x, bi* y)
+void bi_sub(bi** z, bi* x, bi* y)
 {
     //x=0 -> 0-y=z
 	if (bi_is_zero(x)) {
         //z=-y
-		bi_cpy(&z, y);
-        if(y->sign==POSITIVE) z->sign=NEGATIVE;
-        else z->sign=POSITIVE;
+		bi_cpy(z, y);
+        if(y->sign==POSITIVE) (*z)->sign=NEGATIVE;
+        else (*z)->sign=POSITIVE;
 		return;
 	}
     //y=0 -> x-0=z
 	if (bi_is_zero(y)) {
         //z=x
-		bi_cpy(&z, x);
+		bi_cpy(z, x);
         return;
 	}
     //x=y -> x-y=0
 	if (bi_cmp(x,y)==0){
         //z=0
-		bi_set_zero(&z);
+		bi_set_zero(z);
 		return;
 	}
 	
@@ -90,14 +90,14 @@ void bi_sub(bi* z, bi* x, bi* y)
         //0<y<x
         if (bi_cmp(x,y)==1) {
             //z=x-y
-            usub(z,x,y);
+            usub(&z,x,y);
             return;
         }
         //0<x<y
         else {
             //z=-(y-x)
-            usub(z,y,x);
-            z->sign=NEGATIVE;
+            usub(&z,y,x);
+            (*z)->sign=NEGATIVE;
             return;
         }
     }
@@ -107,14 +107,14 @@ void bi_sub(bi* z, bi* x, bi* y)
         //0>x>y
         if (bi_cmp(x,y)==1) {
             //z=|y|-|x|
-            usub(z,y,x);
+            usub(&z,y,x);
             return;
         }
         //0>y>x
         else {
             //z=-(|x|-|y|)
-            usub(y,x,z);
-            z->sign=NEGATIVE;
+            usub(&z,x,y);
+            (*z)->sign=NEGATIVE;
             return;
         }
     }
@@ -122,15 +122,15 @@ void bi_sub(bi* z, bi* x, bi* y)
     //x>0, y<0
     else if(x->sign==POSITIVE && y->sign==NEGATIVE) {
         //z=x+|y|
-        bi_add(z,x,y);
+        bi_add(&z,x,y);
         return;
     }
 
     //x<0, y>0
     else if(x->sign==NEGATIVE && y->sign==POSITIVE) {
         //z=-(|x|+y)
-        bi_add(z,x,y);
-        z->sign=NEGATIVE;
+        bi_add(&z,x,y);
+        (*z)->sign=NEGATIVE;
         return;
     }
 }

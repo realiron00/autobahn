@@ -2,7 +2,7 @@
 
 int main()
 {
-	/*
+	
     bi* x = NULL;
     bi* y = NULL;
 
@@ -29,18 +29,20 @@ int main()
 	printf("\n");
     bi* z = NULL;
 	bi_new(&z, 1);
-    bi_sub(z,x,y);
+	for(int i=0;i<20;i++){
+		bi_sub(&z,x,y);
 
-	printf("66666. copy big integer\n");
+	printf("%d. copy big integer\n", i+1);
 	printf("Sign: %u\n", z->sign);
 	printf("Dmax: %u\n", z->dmax);
 	printf("Digits: ");
 	for (int i = 0; i < z->dmax; i++) {
 		printf("%d ", z->a[i]);
 	}
-	printf("\n");
-    */
+	printf("\n\n");
+	}
     
+    /*
 	bi* x = NULL;
 	bi* y = NULL;
 	
@@ -98,4 +100,16 @@ int main()
 
 	return 0;
     
+   bi_word* a;
+   bi_word b=1000000;
+   bi_word c=2000000;
+
+	a = (bi_word*)malloc(sizeof(bi_word));
+    *a = b*c;
+	for (int i = 0; i < 2; i++) {
+		printf("%d ", a[i]);
+	}
+
+	return 0;
+	*/
 }
