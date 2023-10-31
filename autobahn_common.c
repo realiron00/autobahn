@@ -158,7 +158,7 @@ void bi_show_hex(const bi* x)
     
 	// Print to hexadecimal.
     for (int i = x->dmax - 1; i >= 0; i--)
-        printf("%x", x->a[i]);
+        printf("%08x", x->a[i]);
 
     printf("\n");
 }

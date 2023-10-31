@@ -35,14 +35,14 @@ extern "C" {
 
 // Define the word size based on preprocessor macros
 #if defined(BI_WORD16)
-typedef int8_t bi_word;
-typedef uint8_t bi_uword;
+typedef int8_t bi_word;    ///< Signed 16-bit word for big integers.
+typedef uint8_t bi_uword;  ///< Unsigned 16-bit word for big integers.
 #elif defined(BI_WORD32)
-typedef int16_t bi_word;
-typedef uint16_t bi_uword;
+typedef int16_t bi_word;   ///< Signed 32-bit word for big integers.
+typedef uint16_t bi_uword; ///< Unsigned 32-bit word for big integers.
 #else
-typedef int32_t bi_word;
-typedef uint32_t bi_uword;
+typedef int32_t bi_word;    ///< Signed 64-bit word for big integers.
+typedef uint32_t bi_uword;  ///< Unsigned 64-bit word for big integers.
 #endif
 
 /**
@@ -105,6 +105,7 @@ void bi_delete(bi** x);
  */
 void bi_refine(bi* x);
 
+//TODO 0출력되는 문제 해결 필요
 /**
  * @brief Display the big integer in binary format
  * 
@@ -112,7 +113,7 @@ void bi_refine(bi* x);
  */
 void bi_show_bin(const bi* x);
 
-//TODO DH task
+//TODO DH가 나중에 구현
 /**
  * @brief Display the big integer in decimal format
  * 
@@ -120,6 +121,7 @@ void bi_show_bin(const bi* x);
  */
 void bi_show_dec(const bi* x);
 
+//TODO 0출력되는 문제 해결 필요
 /**
  * @brief Display the big integer in hexadecimal format
  * 
@@ -178,7 +180,7 @@ void bi_cpy(bi** y, const bi* x);
  */
 bi_word bi_cmp(const bi* x, const bi* y);
 
-//TODO DH task
+//TODO DH가 나중에 구현
 /**
  * @brief Generate a random big integer
  * 
