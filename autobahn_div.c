@@ -7,38 +7,16 @@ Output: (Q, R) such that A = BQ + R (0 ≤ R < B).
 1: procedure DIVlong-b(A, B)
 2: (Q, R) ← (0, 0)
 3: for j = n − 1 downto 0 do
-4: R ← 2R + aj . R ← (R  1) ⊕ aj
+4: R ← 2R + aj . R ← (R << 1) ⊕ aj
 5: if R ≥ B then
 6: (Q, R) ← (Q + 2j
-, R − B) . Q ← Q ⊕ (1  j)
+, R − B) . Q ← Q ⊕ (1 << j)
 7: end if
 8: end for
 9: return (Q, R)
 */
 /*
 x=yq+r(0<=r<y)
-*/
-
-/*
-A, B ∈ Z≥0
-Output: INVALID or (Q, R) such that A = BQ + R, (0 ≤ R < B).
-1: procedure DIVnaive(A, B)
-2: if B ≤ 0 then
-3: return INVALID
-4: end if
-5: if A < B then
-6: return (0, A)
-7: end if
-8: if B = 1 then
-9: return (A, 0)
-10: end if
-11: (Q, R) ← (0, A)
-12: while R ≥ B do
-13: (Q, R) ← (Q + 1, R − B)
-14: end while
-15: return (Q, R)
-16: end procedure
-
 */
 void bi_long_div(bi** q, bi** r, bi* x, bi* y)
 {
@@ -60,4 +38,7 @@ void bi_long_div(bi** q, bi** r, bi* x, bi* y)
                 bi_set_zero(r);
                 return;
         }
+
+        bi_set_zero(q);
+        bi_set_zero(r);
 }
