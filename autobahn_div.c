@@ -9,8 +9,7 @@ Output: (Q, R) such that A = BQ + R (0 ≤ R < B).
 3: for j = n − 1 downto 0 do
 4: R ← 2R + aj . R ← (R << 1) ⊕ aj
 5: if R ≥ B then
-6: (Q, R) ← (Q + 2j
-, R − B) . Q ← Q ⊕ (1 << j)
+6: (Q, R) ← (Q + 2j, R − B) . Q ← Q ⊕ (1 << j)
 7: end if
 8: end for
 9: return (Q, R)
