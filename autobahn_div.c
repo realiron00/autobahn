@@ -26,8 +26,8 @@ void bi_long_div(bi** q, bi** r, bi* x, bi* y)
 
         bi* qq = NULL;
         bi* rr = NULL;
-        bi_new(&qq, x->dmax);
-        bi_new(&rr, x->dmax);
+        bi_new(&qq, (x->dmax)-(y->dmax)+1);
+        bi_new(&rr, y->dmax);
 
         for(int i=x->dmax-1; i>=0; i--){
                 for(int j=32-1; j>=0; j--){
