@@ -3,6 +3,51 @@
 int main()
 {
 	
+	bi* x = NULL;
+    bi* y = NULL;
+
+    bi_new(&x, 2);
+    bi_new(&y, 1);
+    x->a[0]=555555555;
+	x->a[1]=1234;
+    y->a[0]=4567;
+	printf("x Sign: %u\n", x->sign);
+	printf("x Dmax: %u\n", x->dmax);
+	printf("x Digits: ");
+	for (int i = 0; i < x->dmax; i++) {
+		printf("%d ", x->a[i]);
+	}
+	printf("\n \n");
+	printf("y Sign: %u\n", y->sign);
+	printf("y Dmax: %u\n", y->dmax);
+	printf("y Digits: ");
+	for (int i = 0; i < y->dmax; i++) {
+		printf("%d ", y->a[i]);
+	}
+	printf("\n\n");
+	bi* q = NULL;
+	bi_new(&q, 2);
+	bi* r = NULL;
+	bi_new(&r, 2);
+	bi_long_div(&q, &r, x, y);
+
+	printf("q Sign: %u\n", q->sign);
+	printf("q Dmax: %u\n", q->dmax);
+	printf("q Digits: ");
+	for (int i = 0; i < q->dmax; i++) {
+		printf("%d ", q->a[i]);
+	}
+	printf("\n\n");
+
+	printf("r Sign: %u\n", r->sign);
+	printf("r Dmax: %u\n", r->dmax);
+	printf("r Digits: ");
+	for (int i = 0; i < r->dmax; i++) {
+		printf("%d ", r->a[i]);
+	}
+
+
+	/*
     bi* x = NULL;
     bi* y = NULL;
 
@@ -32,7 +77,7 @@ int main()
 	for(int i=0;i<20;i++){
 		bi_sub(&z,x,y);
 
-	printf("%d. copy big integer\n", i+1);
+	printf("%d. z copy big integer\n", i+1);
 	printf("Sign: %u\n", z->sign);
 	printf("Dmax: %u\n", z->dmax);
 	printf("Digits: ");
@@ -41,6 +86,7 @@ int main()
 	}
 	printf("\n\n");
 	}
+	*/
     
     /*
 	bi* x = NULL;

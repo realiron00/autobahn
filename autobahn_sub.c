@@ -125,10 +125,11 @@ void bi_sub(bi** z, bi* x, bi* y)
     // If x = 0, set z = -y or y
     if (bi_is_zero(x)) {
         bi_cpy(z, y);
-        if (y->sign == POSITIVE)
+        if (y->sign == POSITIVE && bi_is_zero(y) == false)
             (*z)->sign = NEGATIVE;
-        else
-            (*z)->sign = POSITIVE;
+            return;
+        
+        (*z)->sign = POSITIVE;
         return;
     }
 

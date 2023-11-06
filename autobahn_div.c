@@ -1,20 +1,6 @@
 #include "autobahn.h"
 
 /*
-Input: A = sum(a_j*2^j)(j=0 to n-1)
-        ,B ∈ Z (a_j ∈ {0, 1}, A ≥ B > 0)
-Output: (Q, R) such that A = BQ + R (0 ≤ R < B).
-1: procedure DIVlong-b(A, B)
-2: (Q, R) ← (0, 0)
-3: for j = n − 1 downto 0 do
-4: R ← 2R + aj . R ← (R << 1) ⊕ aj
-5: if R ≥ B then
-6: (Q, R) ← (Q + 2j, R − B) . Q ← Q ⊕ (1 << j)
-7: end if
-8: end for
-9: return (Q, R)
-*/
-/*
 x=yq+r(0<=r<y)
 */
 void bi_long_div(bi** q, bi** r, bi* x, bi* y)
@@ -38,6 +24,30 @@ void bi_long_div(bi** q, bi** r, bi* x, bi* y)
                 return;
         }
 
-        bi_set_zero(q);
-        bi_set_zero(r);
+        bi* qq = NULL;
+        bi* rr = NULL;
+        bi_new(&qq, x->dmax);
+        bi_new(&rr, x->dmax);
+
+        for(int i=x->dmax-1; i>=0; i--){
+                for(int j=32-1; j>=0; j--){
+                        uint32_t aj=(x->a[i] & (1 << j)) >> j;
+                        rr->a[i]=(rr->a[i]<<1)^aj;
+                        if(bi_cmp(rr,y)>=0){
+                                qq->a[i]=qq->a[i]^(1<<j);
+                                bi_sub(&rr,rr,y);
+                        }
+                }
+        }
+
+        bi_refine(qq);
+        bi_refine(rr);
+
+        bi_cpy(q,qq);
+        bi_cpy(r,rr);
+
+        bi_delete(&qq);
+        bi_delete(&rr);
+
+        return;
 }
