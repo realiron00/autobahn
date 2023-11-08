@@ -105,8 +105,8 @@ void test3()
     bi_new(&x, 2);
     bi_new(&y, 1);
     x->a[0]=555555555;
-	x->a[1]=1234;
-    y->a[0]=4567;
+    x->a[1]=1234;
+	y->a[0]=4567;
 	printf("x Sign: %u\n", x->sign);
 	printf("x Dmax: %u\n", x->dmax);
 	printf("x Digits: ");
@@ -145,20 +145,21 @@ void test3()
 
 int main()
 {
-	int num=1;
-	switch (num)
+	int num=3;
+	switch(num)
 	{
-	case 1:
-		test1();
-		break;
-	case 2:
-		test2();
-		break;
-	case 3:
-		test3();
-		break;
-	default:
-		break;
+		case 1:
+			test1();
+			break;
+		case 2:
+			test2();
+			break;
+		case 3:
+			test3();
+			break;
+		default:
+			printf("wrong number\n");
+			break;
 	}
 	return 0;
 }
