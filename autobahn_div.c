@@ -48,9 +48,13 @@ void bi_long_div(bi** q, bi** r, bi* x, bi* y)
                         MULC(&rr,rr,x2);
                         bi_add(&rr,rr,aj);
                         if(bi_cmp(rr,y)>=0){
-                                for(int j=bit_idx; j>=0; j--){
+                                for(int j=bit_idx; j>0; j--){
                                         MULC(&jj,jj,x2);
                                 }
+                                printf("jjjj Digits: ");
+                                for (int i = 0; i < jj->dmax; i++) {
+                                        printf("%d ", jj->a[i]);
+                                        }
                                 bi_add(&qq,qq,jj);
                                 bi_sub(&rr,rr,y);
                         }
