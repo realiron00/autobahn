@@ -106,11 +106,10 @@ void test3()
 	bi* x = NULL;
     bi* y = NULL;
 
-    bi_new(&x, 2);
+    bi_new(&x, 1);
     bi_new(&y, 1);
 
     x->a[0]=555555555;
-    x->a[1]=1234;
 
 	y->a[0]=4567;
 
@@ -131,10 +130,10 @@ void test3()
 	printf("\n\n");
 
 	bi* q = NULL;
-	bi_new(&q, 2);
+	bi_new(&q, 1);
 
 	bi* r = NULL;
-	bi_new(&r, 2);
+	bi_new(&r, 1);
 
 	bi_long_div(&q, &r, x, y);
 
@@ -154,9 +153,70 @@ void test3()
 	}
 }
 
+void test4()
+{
+	bi* x = NULL;
+    bi* y = NULL;
+
+    bi_new(&x, 2);
+    bi_new(&y, 1);
+
+    x->a[0]=2345;
+
+	y->a[0]=2;
+
+	printf("x Sign: %u\n", x->sign);
+	printf("x Dmax: %u\n", x->dmax);
+	printf("x Digits: ");
+	for (int i = 0; i < x->dmax; i++) {
+		printf("%d ", x->a[i]);
+	}
+	printf("\n \n");
+
+	printf("y Sign: %u\n", y->sign);
+	printf("y Dmax: %u\n", y->dmax);
+	printf("y Digits: ");
+	for (int i = 0; i < y->dmax; i++) {
+		printf("%d ", y->a[i]);
+	}
+	printf("\n\n");
+
+	bi* z = NULL;
+	bi_new(&z, 2);
+
+	MULC(&z, x, y);
+
+	printf("z Sign: %u\n", z->sign);
+	printf("z Dmax: %u\n", z->dmax);
+	printf("z Digits: ");
+	for (int i = 0; i < z->dmax; i++) {
+		printf("%d ", z->a[i]);
+	}
+}
+
+void test5()
+{
+	bi* x = NULL;
+	bi* x2 = NULL;
+
+	bi_new(&x, 1);
+	bi_new(&x2, 1);
+	x->a[0]=0x01;
+	x2->a[0]=0x02;
+
+	for(int j=5; j>0; j--){
+		MULC(&x,x,x2);
+	}
+	printf("x dmax: %d\n", x->dmax);
+	printf("x Digits: ");
+	for (int i = 0; i < x->dmax; i++) {
+		printf("%d ", x->a[i]);
+	}
+}
+
 int main()
 {
-	int num=3;
+	int num=5;
 	switch(num)
 	{
 		case 1:
@@ -168,6 +228,12 @@ int main()
 		case 3:
 			test3();
 			break;
+		case 4:
+			test4();
+			break;
+		case 5:
+			test5();
+			break;	
 		default:
 			printf("wrong number\n");
 			break;

@@ -27,16 +27,31 @@ void bi_long_div(bi** q, bi** r, bi* x, bi* y)
         bi* qq = NULL;
         bi* rr = NULL;
         bi_new(&qq, (x->dmax)-(y->dmax)+1);
-        bi_new(&rr, y->dmax+1);
+        bi_new(&rr, y->dmax);
+        bi_set_zero(&qq);
+        bi_set_zero(&rr);
 
         bi* x2 = NULL;
+        bi_new(&x2, 1);
+        x2->a[0]=2;
+
+        bi* jj=NULL;
+        bi_new(&jj, (x->dmax)-(y->dmax)+1);
+        jj->a[0]=1;
+
+        bi* aj = NULL;
+        bi_new(&aj, 1);
 
         for(int block_idx=x->dmax-1; block_idx>=0; block_idx--){
                 for(int bit_idx=32-1; bit_idx>=0; bit_idx--){
-                        uint32_t aj=(x->a[block_idx] & (1 << bit_idx)) >> bit_idx;
-                        rr->a[block_idx]=(rr->a[block_idx]<<1)^aj;
+                        aj->a[0]=(x->a[block_idx] & (1 << bit_idx)) >> bit_idx;
+                        MULC(&rr,rr,x2);
+                        bi_add(&rr,rr,aj);
                         if(bi_cmp(rr,y)>=0){
-                                qq->a[block_idx]=qq->a[block_idx]^(1<<bit_idx);
+                                for(int j=bit_idx; j>=0; j--){
+                                        MULC(&jj,jj,x2);
+                                }
+                                bi_add(&qq,qq,jj);
                                 bi_sub(&rr,rr,y);
                         }
                 }
