@@ -29,6 +29,8 @@ void bi_long_div(bi** q, bi** r, bi* x, bi* y)
         bi_new(&qq, (x->dmax)-(y->dmax)+1);
         bi_new(&rr, y->dmax+1);
 
+        bi* x2 = NULL;
+
         for(int block_idx=x->dmax-1; block_idx>=0; block_idx--){
                 for(int bit_idx=32-1; bit_idx>=0; bit_idx--){
                         uint32_t aj=(x->a[block_idx] & (1 << bit_idx)) >> bit_idx;
