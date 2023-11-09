@@ -27,14 +27,14 @@ void bi_long_div(bi** q, bi** r, bi* x, bi* y)
         bi* qq = NULL;
         bi* rr = NULL;
         bi_new(&qq, (x->dmax)-(y->dmax)+1);
-        bi_new(&rr, y->dmax);
+        bi_new(&rr, y->dmax+1);
 
-        for(int i=x->dmax-1; i>=0; i--){
-                for(int j=32-1; j>=0; j--){
-                        uint32_t aj=(x->a[i] & (1 << j)) >> j;
-                        rr->a[i]=(rr->a[i]<<1)^aj;
+        for(int block_idx=x->dmax-1; block_idx>=0; block_idx--){
+                for(int bit_idx=32-1; bit_idx>=0; bit_idx--){
+                        uint32_t aj=(x->a[block_idx] & (1 << bit_idx)) >> bit_idx;
+                        rr->a[block_idx]=(rr->a[block_idx]<<1)^aj;
                         if(bi_cmp(rr,y)>=0){
-                                qq->a[i]=qq->a[i]^(1<<j);
+                                qq->a[block_idx]=qq->a[block_idx]^(1<<bit_idx);
                                 bi_sub(&rr,rr,y);
                         }
                 }
