@@ -117,8 +117,21 @@ void bi_show_bin(const bi* x)
     // Display the number in binary notation.
     printf("0b");
 
+    // Determine the position of the most significant bit (MSB).
+    bi_uword msb = sizeof(bi_word) * 8;
+
+    while (msb--) {
+        if (((x->a[x->dmax - 1] >> msb) & 1) == 1)
+            break;
+    }
+
+    for (int j = msb; j >= 0; j--) {
+        // Print each bit of the "bi" number by shifting and masking.
+        printf("%d", (x->a[x->dmax - 1] >> j) & 1);
+    }
+
     // Iterate through the elements of the "a" array in the "bi" structure.
-    for (int i = x->dmax - 1; i >= 0; i--)
+    for (int i = x->dmax - 2; i >= 0; i--)
     {
         // Iterate through the bits within each element.
         for (int j = sizeof(bi_word) * 8 - 1; j >= 0; j--)
@@ -132,35 +145,34 @@ void bi_show_bin(const bi* x)
     printf("\n");
 }
 
-//TODO DH 구현 예정
 /**
- * @brief Display the big integer in hexadecimal format.
- * 
- * This function displays the hexadecimal representation of the big integer 'x'
- * to the standard output (console). Each digit of the big integer is represented
- * as a hexadecimal character (0-9, A-F), starting from the most significant digit
- * and ending with the least significant digit. Leading zero digits are included
- * to maintain the specified maximum number of digits ('dmax').
- * 
- * For example, if 'x' is 255 (in decimal) with 'dmax' set to 4, the output
- * will be "00FF" in hexadecimal format.
- * 
- * @param x Pointer to a bi structure representing the big integer to display.
+ * @brief Display a big integer in hexadecimal notation.
+ *
+ * This function takes a big integer 'x' as input and prints it in hexadecimal
+ * notation. If the integer is negative, it adds a minus sign ('-') before the
+ * hexadecimal representation. The most significant digit is printed first, and
+ * it is prefixed with "0x". The rest of the digits are displayed using leading
+ * zeros to ensure a consistent width of 8 characters per digit.
+ *
+ * @param x The big integer to be displayed.
  */
 void bi_show_hex(const bi* x) 
 {
-	// Check negative
+    // Check if the integer is negative and add a minus sign if necessary.
     if (x->sign) 
-		printf("-");
+        printf("-");
 
-	// Display in hexadecimal notation.
+    // Display the big integer in hexadecimal notation.
     printf("0x");
-    
-	// Print to hexadecimal.
-    for (int i = x->dmax - 1; i >= 0; i--)
+
+    // Print the most significant digit first.
+    printf("%x", x->a[x->dmax - 1]);
+
+    // Print the rest of the digits in hexadecimal format.
+    for (int i = x->dmax - 2; i >= 0; i--)
         printf("%08x", x->a[i]);
 
-    printf("\n");
+    printf("\n"); // Add a newline character for formatting.
 }
 
 /**
@@ -194,74 +206,115 @@ void bi_set_by_arr(bi** x, const bi_uword* a, sign sign, bi_uword dmax)
 }
 
 /**
- * @brief Set a big integer from a hexadecimal string representation.
+ * @brief Convert a hexadecimal character to its corresponding nibble value.
+ *
+ * This function takes a character 'hex_char' representing a hexadecimal digit
+ * and returns its corresponding nibble (4-bit) value as a bi_uword (unsigned word).
  * 
- * This function initializes a big integer 'x' with the values parsed from a hexadecimal
- * format string 'str'. The 'sign' parameter determines whether 'x' is positive or negative.
- * The function allocates memory for the big integer 'x' and parses the string 'str' to populate
- * its digit array. Each chunk of hexadecimal digits in 'str' (with a size of 2 characters per
- * chunk) is converted to a bi_uword and stored in the big integer's array. If 'str' contains
- * characters that are not valid hexadecimal digits, the behavior is undefined.
- * 
- * @param x Pointer to a pointer to a bi structure (output parameter) where the newly created
- *          big integer will be stored.
- * @param str Hexadecimal string representation of the big integer.
- * @param sign Sign of the big integer (POSITIVE or NEGATIVE).
+ * @param hex_char The input hexadecimal character to be converted.
+ * @return bi_uword The nibble value (0-15) corresponding to the input character.
  */
-static void bi_set_by_str_hex(bi** x, const char* str, sign sign)
+static bi_uword bi_char_to_nibble_hex(char hex_char)
 {
-    // Calculate the length of the input string 'str'.
-    bi_uword len = (bi_uword)strlen(str);
-
-    // Calculate the number of bi_uword elements required to store the hexadecimal digits.
-    bi_uword new_dmax = (len - 1) / (sizeof(bi_uword) * 2) + 1;
-
-    // Allocate memory for the big integer.
-    bi_new(x, new_dmax);
-
-    // Check if memory allocation was successful.
-    if (*x == NULL) {
-        fprintf(stderr, "Error: Memory allocation failed.\n");
-        exit(1);
+    if ('0' <= hex_char && hex_char <= '9') {
+        // If 'hex_char' is in the range '0' to '9', convert it to its integer value (0-9).
+        return (bi_uword)hex_char - '0';
     }
-
-    // Set the sign of the big integer.
-    (*x)->sign = sign;
-
-    for (int i = 0; i < (*x)->dmax; i++) 
-    {
-        // Calculate the size of each chunk of hexadecimal digits (2 characters per chunk).
-        bi_uword chunk_size = sizeof(bi_uword) * 2;
-
-        // Create a buffer to store the chunk of hexadecimal digits.
-        char* chunk = (char*)malloc(chunk_size + 1);
-        
-        // Copy a chunk of hexadecimal digits from the input string to chunk.
-        strncpy(chunk, str + i * chunk_size, chunk_size);
-
-        // Null-terminate the buffer to ensure proper string conversion.
-        chunk[chunk_size] = '\0';
-
-        // Convert the chunk to a bi_uword and store it in the big integer's array.
-        (*x)->a[i] = strtoul(chunk, NULL, HEXADECIMAL);
-		
-		// Free the memory allocated for the chunk.
-    	free(chunk);
+    else if ('A' <= hex_char && hex_char <= 'F') {
+        // If 'hex_char' is in the range 'A' to 'F', convert it to its integer value (10-15).
+        return (bi_uword)hex_char - 'A' + 10;
+    } 
+    else if ('a' <= hex_char && hex_char <= 'f') {
+        // If 'hex_char' is in the range 'a' to 'f', convert it to its integer value (10-15).
+        return (bi_uword)hex_char - 'a' + 10;
+    }
+    else {
+        // If 'hex_char' is not a valid hexadecimal digit, return 0.
+        return 0;
     }
 }
 
-//TODO 나중에 구현하자
+/**
+ * @brief Set a big integer value from a hexadecimal string.
+ *
+ * This function takes a pointer to a big integer 'x', a hexadecimal string 'str',
+ * and a 'sign' to determine the sign of the resulting big integer. It converts the
+ * hexadecimal string into a big integer representation and sets it as the value of 'x'.
+ *
+ * @param x A pointer to the big integer to be set.
+ * @param str The hexadecimal string to convert to a big integer.
+ * @param sign The sign of the resulting big integer (positive or negative).
+ */
+static void bi_set_by_str_hex(bi** x, const char* str, sign sign)
+{
+    // Calculate the length of the input string.
+    bi_uword str_len = (bi_uword)strlen(str);
+
+    // Calculate the number of bi_uword elements required to store the hexadecimal string.
+    bi_uword new_dmax = (str_len / (sizeof(bi_uword) * 2)) + (str_len % (sizeof(bi_uword) * 2) != 0);
+
+    // Allocate memory for the new big integer and set its sign.
+    bi_new(x, new_dmax);
+    (*x)->sign = sign;
+
+    // Parse the input hex string and store it in the big integer.
+    for (size_t bi_idx = 0; bi_idx < new_dmax; bi_idx++) 
+    {
+        // Parse a word of the hex string into a word of the big integer.
+        for (size_t nibbleIdx = 0; nibbleIdx < sizeof(bi_uword) * 2; nibbleIdx++)
+        {
+            // Convert a hexadecimal character to its nibble value and store it in the big integer.
+            bi_uword hex_nibble = bi_char_to_nibble_hex(str[--str_len]);
+            (*x)->a[bi_idx] += hex_nibble << (4 * nibbleIdx);
+
+            if (str_len == 0)
+                break;
+        }
+    }
+}
+
+//TODO Comming Soon...
 static void bi_set_by_str_dec(bi** x, const char* str, sign sign)
 {
 	fprintf(stderr, "지원하지 않는 기능입니다.\n");
     exit(1);
 }
 
-//TODO 나중에 구현하자
+/**
+ * @brief Set a big integer value from a binary string.
+ *
+ * This function takes a pointer to a big integer 'x', a binary string 'str',
+ * and a 'sign' to determine the sign of the resulting big integer. It converts the
+ * binary string into a big integer representation and sets it as the value of 'x'.
+ *
+ * @param x A pointer to the big integer to be set.
+ * @param str The binary string to convert to a big integer.
+ * @param sign The sign of the resulting big integer (positive or negative).
+ */
 static void bi_set_by_str_bin(bi** x, const char* str, sign sign)
 {
-	fprintf(stderr, "지원하지 않는 기능입니다.\n");
-    exit(1);
+    // Calculate the length of the input binary string.
+    bi_uword str_len = strlen(str);
+
+    // Calculate the number of bi_uword elements required to store the binary string.
+    bi_uword new_dmax = str_len / (sizeof(bi_uword) * 8) + 1;
+
+    // Initialize the big integer elements to zero.
+    for (size_t bi_idx = 0; bi_idx < new_dmax; bi_idx++)
+    {
+        (*x)->a[bi_idx] = 0;
+
+        // Parse a word of the binary string into a word of the big integer.
+        for (size_t bit_idx = 0; bit_idx < sizeof(bi_uword) * 8; bit_idx++)
+        {
+            // Convert a binary character to its value (0 or 1) and store it in the big integer.
+            (*x)->a[bi_idx] += bi_char_to_nibble_hex(str[--str_len]);
+            (*x)->a[bi_idx] <<= 1;
+
+            if (str_len == 0)
+                break;
+        }
+    }
 }
 
 /**
@@ -446,6 +499,55 @@ bi_word bi_cmp(const bi* x, const bi* y)
 	//If x and y are both negative, return the opposite value of the absolute value comparison
 	else
 		return ret * (-1);
+}
+
+/**
+ * @brief Fill an array with random bytes.
+ *
+ * This function generates random bytes and fills the destination array 'dst' with
+ * these bytes. The number of bytes to generate is determined by 'wordlen' times the
+ * size of a 'bi_word' element.
+ *
+ * @param dst The destination array to store the random bytes.
+ * @param wordlen The number of 'bi_word' elements, which determines the number of bytes to generate.
+ */
+void array_rand(bi_uword* dst, bi_uword wordlen)
+{
+    uint8_t* p = (uint8_t*)dst;
+    int cnt = wordlen * sizeof(bi_word);
+
+    // Generate random bytes and fill the destination array.
+    while (cnt > 0) {
+        // Generate a random byte using the rand() function and bitwise masking.
+        *p = (bi_uword)rand() & 0xff;
+        p++;
+        cnt--;
+    }
+}
+
+/**
+ * @brief Generate a random big integer with a specified sign and size.
+ *
+ * This function generates a random big integer with the specified sign ('sign')
+ * and size ('dmax') and assigns it to the pointer 'x'.
+ *
+ * @param x A pointer to the big integer that will hold the random value.
+ * @param sign The sign of the generated big integer (positive or negative).
+ * @param dmax The number of elements in the big integer to determine its size.
+ */
+void bi_gen_rand(bi** x, sign sign, bi_uword dmax)
+{
+    // Allocate memory for the new big integer with the specified size.
+    bi_new(x, dmax);
+
+    // Set the sign of the big integer.
+    (*x)->sign = sign;
+
+    // Generate a random array of elements for the big integer.
+    array_rand((*x)->a, dmax);
+
+    // Refine the big integer to ensure it is properly formatted.
+    bi_refine(*x);
 }
 
 /**

@@ -109,9 +109,9 @@ void test3()
     bi_new(&x, 1);
     bi_new(&y, 1);
 
-    x->a[0]=555555555;
+    x->a[0]=0x3ff;
 
-	y->a[0]=4567;
+	y->a[0]=0x3;
 
 	printf("x Sign: %u\n", x->sign);
 	printf("x Dmax: %u\n", x->dmax);
@@ -135,7 +135,7 @@ void test3()
 	bi* r = NULL;
 	bi_new(&r, 1);
 
-	bi_long_div(&q, &r, x, y);
+	bi_div_long(&q, &r, x, y);
 
 	printf("q Sign: %u\n", q->sign);
 	printf("q Dmax: %u\n", q->dmax);
@@ -204,19 +204,52 @@ void test5()
 	x->a[0]=0x01;
 	x2->a[0]=0x02;
 
-	for(int j=5; j>0; j--){
+	for(int j=32; j>0; j--){
 		MULC(&x,x,x2);
 	}
 	printf("x dmax: %d\n", x->dmax);
 	printf("x Digits: ");
 	for (int i = 0; i < x->dmax; i++) {
-		printf("%d ", x->a[i]);
+		printf("%x ", x->a[i]);
 	}
+	printf("\n");
+}
+
+void test6()
+{
+	bi* operand_x = NULL;
+    bi* operand_y = NULL;
+    bi* result = NULL;
+    bi* quotient = NULL;
+    bi* remainder = NULL;
+
+    bi_new(&operand_x, 1);
+    bi_new(&operand_y, 1);
+    bi_new(&result, 1);
+    bi_new(&quotient, 1);
+    bi_new(&remainder, 1);
+
+    bi_set_by_str(&operand_x, "3ffffffff", POSITIVE, HEXADECIMAL);
+    bi_set_by_str(&operand_y, "3", POSITIVE, HEXADECIMAL);
+
+    bi_show_hex(operand_x);
+    bi_show_hex(operand_y);
+
+    bi_div_long(&quotient, &remainder, operand_x, operand_y);
+    bi_show_hex(quotient);
+    bi_show_hex(remainder);
+
+    bi_delete(&operand_x);
+    bi_delete(&operand_y);
+    bi_delete(&result);
+    bi_delete(&quotient);
+    bi_delete(&remainder);
+
 }
 
 int main()
 {
-	int num=5;
+	int num=6;
 	switch(num)
 	{
 		case 1:
@@ -234,6 +267,9 @@ int main()
 		case 5:
 			test5();
 			break;	
+		case 6:
+			test6();
+			break;
 		default:
 			printf("wrong number\n");
 			break;
