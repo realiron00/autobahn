@@ -109,17 +109,24 @@ void __mul(bi** z, bi_uword* x, bi_uword* y) {
             | A0 B1 |     T1
         | A1  B1 |    T3
     */
+    bi_uword T0 = 0;
+    bi_uword T1 = 0;
+    bi_uword T2 = 0;
+    bi_uword T3 = 0;
+    bi_uword Temp0 = 0;
+    bi_uword Right = 0;
+    bi_uword Left = 0;
 
     // Perform multiplication
-    bi_uword T0 = A1 * B0;
-    bi_uword T1 = A0 * B1;
-    bi_uword T2 = A0 * B0;
-    bi_uword T3 = A1 * B1;
+    T0 = A1 * B0;
+    T1 = A0 * B1;
+    T2 = A0 * B0;
+    T3 = A1 * B1;
 
-    bi_uword Temp0 = T0 + T1; // Temp0 = T0 + T1
+    Temp0 = T0 + T1; // Temp0 = T0 + T1
 
-    bi_uword Right = (Temp0 << (bit_size / 2)) + T2; // Lower half of the result
-    bi_uword Left = T3 + (Temp0 >> (bit_size / 2)) + ((Temp0 < T0) << (bit_size / 2)) + (Right < T2);  // Upper half of the result - T3 + Temp0 + 'if Temp0 carries, add 1' + 'if Right carries, add 1'
+    Right = (Temp0 << (bit_size / 2)) + T2; // Lower half of the result
+    Left = T3 + (Temp0 >> (bit_size / 2)) + ((Temp0 < T0) << (bit_size / 2)) + (Right < T2);  // Upper half of the result - T3 + Temp0 + 'if Temp0 carries, add 1' + 'if Right carries, add 1'
 
     result->a[0] = Right; // Store the lower half in the result
     result->a[1] = Left;  // Store the upper half in the result
@@ -135,7 +142,7 @@ void __mul(bi** z, bi_uword* x, bi_uword* y) {
 }
 
 // Improved multiplication function
-void MULC(bi** z, bi* x, bi* y) {
+void bi_mul_improved(bi** z, bi* x, bi* y) {
 
     int n, m;
 
@@ -179,7 +186,7 @@ void MULC(bi** z, bi* x, bi* y) {
 
 
 //   karatsuba 
-void Mul_K(bi** z, bi* x, bi* y) {
+void bi_mul_karatsuba(bi** z, bi* x, bi* y) {
 
     bi* A0 = NULL;
     bi* A1 = NULL;
@@ -216,7 +223,7 @@ void Mul_K(bi** z, bi* x, bi* y) {
     int min = (((x->dmax < y->dmax) ? (x->dmax) : (y->dmax)));
 
     if (flag >= min) {
-        MULC(z, x, y);
+        bi_mul_improved(z, x, y);
 
         return; // flag 만족 여부
     }
@@ -231,8 +238,8 @@ void Mul_K(bi** z, bi* x, bi* y) {
         arr_mod(&B0, lw);
 
 
-        Mul_K(&T1, A1, B1);
-        Mul_K(&T0, A0, B0);
+        bi_mul_karatsuba(&T1, A1, B1);
+        bi_mul_karatsuba(&T0, A0, B0);
 
         ShiftLeft(&T1, 2 * lw);
         bi_add(&R, T1, T0);
@@ -244,7 +251,7 @@ void Mul_K(bi** z, bi* x, bi* y) {
         int S1_sign = S1->sign;
         int S0_sign = S0->sign;
 
-        Mul_K(&S, S1, S0);
+        bi_mul_karatsuba(&S, S1, S0);
         S->sign = S1_sign ^ S0_sign;
         //////////////////////////
 
@@ -304,6 +311,6 @@ void bi_mul(bi** z, bi* x, bi* y) {
     // 부호 파트 
     (*z)->sign = x->sign ^ y->sign;
     //////////////////////////
-    MULC(z, x, y);
+    bi_mul_improved(z, x, y);
 
 }

@@ -184,7 +184,7 @@ void test4()
 	bi* z = NULL;
 	bi_new(&z, 2);
 
-	MULC(&z, x, y);
+	bi_mul_improved(&z, x, y);
 
 	printf("z Sign: %u\n", z->sign);
 	printf("z Dmax: %u\n", z->dmax);
@@ -204,8 +204,8 @@ void test5()
 	x->a[0]=0x01;
 	x2->a[0]=0x02;
 
-	for(int j=32; j>0; j--){
-		MULC(&x,x,x2);
+	for(int j=3; j>0; j--){
+		bi_mul_improved(&x,x,x2);
 	}
 	printf("x dmax: %d\n", x->dmax);
 	printf("x Digits: ");
@@ -249,7 +249,7 @@ void test6()
 
 int main()
 {
-	int num=6;
+	int num=5;
 	switch(num)
 	{
 		case 1:
