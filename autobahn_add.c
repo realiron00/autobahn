@@ -130,19 +130,7 @@ static void bi_uadd(bi** z, const bi* x, bi* y)
  */
 void bi_add(bi** z, bi* x, bi* y) 
 {
-    // Check if 'x' has greater or equal dmax than 'y'
-    if (x->dmax >= y->dmax)
-    {
-        bi_uadd(z, x, y);
-        return;
-    }
-    else
-    {
-        bi_uadd(z, y, x);
-        return;
-    }
-
-    // Special case: If 'x' is equal to 0, copy 'y' to 'z'
+   // Special case: If 'x' is equal to 0, copy 'y' to 'z'
     if (bi_is_zero(x))
     {
         bi_cpy(z, y);
@@ -155,20 +143,47 @@ void bi_add(bi** z, bi* x, bi* y)
         bi_cpy(z, x);
         return;
     }
-
-    // Subtract |y| from 'x' if 'x' is positive and 'y' is negative
-    if (x->sign == POSITIVE && y->sign == NEGATIVE) 
+   if(x->sign == POSITIVE && y->sign == POSITIVE)
+   {
+      if (x->dmax >= y->dmax)
+      {
+         bi_uadd(z, x, y);
+         return;
+      }
+      else
+      {
+         bi_uadd(z, y, x);
+         return;
+      }
+   }
+   else if(x->sign == NEGATIVE && y->sign == NEGATIVE)
+   {
+      if (x->dmax >= y->dmax)
+      {
+         bi_uadd(z, x, y);
+         return;
+      }
+      else
+      {
+         bi_uadd(z, y, x);
+         return;
+      }
+   }
+      
+   // Subtract |y| from 'x' if 'x' is positive and 'y' is negative
+    else if (x->sign == POSITIVE && y->sign == NEGATIVE) 
     {
-        y->sign = NEGATIVE;
+      y->sign = POSITIVE;
         bi_sub(z, x, y);
         return;
     }
 
     // Subtract |x| from 'y' if 'x' is negative and 'y' is positive
-    if (x->sign == NEGATIVE && y->sign == POSITIVE) 
+    else if (x->sign == NEGATIVE && y->sign == POSITIVE) 
     {
-        x->sign = NEGATIVE;
-        bi_sub(z, x, y);
+      x->sign = POSITIVE;
+        bi_sub(z, y, x);
         return;
     }
+   
 }

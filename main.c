@@ -12,7 +12,8 @@ void test1()
 	printf("x Sign: %u\n", x->sign);
 	printf("x Dmax: %u\n", x->dmax);
 	printf("x Digits: ");
-	for (int i = 0; i < x->dmax; i++) {
+	for (int i = 0; i < x->dmax; i++) 
+	{
 		printf("%d ", x->a[i]);
 	}
 	printf("\n\n");
@@ -26,7 +27,8 @@ void test1()
 	printf("x Sign: %u\n", x->sign);
 	printf("x Dmax: %u\n", x->dmax);
 	printf("x Digits: ");
-	for (int i = 0; i < x->dmax; i++) {
+	for (int i = 0; i < x->dmax; i++) 
+	{
 		printf("%d ", x->a[i]);
 	}
 	printf("\n\n");
@@ -36,7 +38,8 @@ void test1()
 	printf("3. Refined big integer\n");
 	printf("x Dmax after refining: %d\n", x->dmax);
 	printf("x Digits: ");
-	for (int i = 0; i < x->dmax; i++) {
+	for (int i = 0; i < x->dmax; i++) 
+	{
 		printf("%d ", x->a[i]);
 	}
 	printf("\n/n");
@@ -47,7 +50,8 @@ void test1()
 	printf("y Sign: %u\n", y->sign);
 	printf("y Dmax: %u\n", y->dmax);
 	printf("y Digits: ");
-	for (int i = 0; i < y->dmax; i++) {
+	for (int i = 0; i < y->dmax; i++) 
+	{
 		printf("%d ", y->a[i]);
 	}
 	printf("\n\n");
@@ -55,7 +59,7 @@ void test1()
 	//[5] bi_delete 함수 테스트
 	bi_delete(&x);
 	if (x == NULL)
-		printf("5. Big integer deleted successfully.\n");
+	printf("5. Big integer deleted successfully.\n");
 }
 
 //autobahn_sub test
@@ -101,6 +105,7 @@ void test2()
 	}
 }
 
+//autobahn_div test
 void test3()
 {
 	bi* x = NULL;
@@ -111,7 +116,7 @@ void test3()
 
     x->a[0]=0x3ff;
 
-	y->a[0]=0x3;
+	y->a[0]=0x34;
 
 	printf("x Sign: %u\n", x->sign);
 	printf("x Dmax: %u\n", x->dmax);
@@ -148,11 +153,13 @@ void test3()
 	printf("r Sign: %u\n", r->sign);
 	printf("r Dmax: %u\n", r->dmax);
 	printf("r Digits: ");
-	for (int i = 0; i < r->dmax; i++) {
+	for (int i = 0; i < r->dmax; i++) 
+	{
 		printf("%d ", r->a[i]);
 	}
 }
 
+//autobahn_mul test
 void test4()
 {
 	bi* x = NULL;
@@ -194,6 +201,7 @@ void test4()
 	}
 }
 
+//autobahn_mul 지수승 test
 void test5()
 {
 	bi* x = NULL;
@@ -204,7 +212,7 @@ void test5()
 	x->a[0]=0x01;
 	x2->a[0]=0x02;
 
-	for(int j=3; j>0; j--){
+	for(int j=10; j>0; j--){
 		bi_mul_improved(&x,x,x2);
 	}
 	printf("x dmax: %d\n", x->dmax);
@@ -215,6 +223,7 @@ void test5()
 	printf("\n");
 }
 
+//autobahn_div_long 동현 test
 void test6()
 {
 	bi* operand_x = NULL;
@@ -249,7 +258,7 @@ void test6()
 
 int main()
 {
-	int num=5;
+	int num=3;
 	switch(num)
 	{
 		case 1:
@@ -269,6 +278,12 @@ int main()
 			break;	
 		case 6:
 			test6();
+			break;
+		case 7:
+			bi_test();
+			break;
+		case 8:
+			bi_test_div();
 			break;
 		default:
 			printf("wrong number\n");
