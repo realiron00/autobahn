@@ -257,7 +257,17 @@ void test6()
 
 int main()
 {
-	int num=6;
+	int num;
+	printf("1. autobahn_common test\n");
+	printf("2. autobahn_sub test\n");
+	printf("3. autobahn_div test\n");
+	printf("4. autobahn_mul test\n");
+	printf("5. autobahn_mul 지수승 test\n");
+	printf("6. autobahn_div_long 동현 test\n");
+	printf("7. autobahn_test\n");
+	printf("8. autobahn_div_long test\n");
+	printf("select number: ");
+	scanf("%d", &num);
 	switch(num)
 	{
 		case 1:
@@ -278,10 +288,15 @@ int main()
 		case 6:
 			test6();
 			break;
+		case 7:
+			bi_test();
+			break;
+		case 8:
+			bi_test_div();
+			break;
 		default:
 			printf("wrong number\n");
 			break;
 	}
-	//bi_test();
 	return 0;
 }
