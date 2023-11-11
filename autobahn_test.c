@@ -57,11 +57,11 @@ void bi_test()
         read_integer_from_file(&operand_y, f_operand_y);
 
         /* 부호 바꾸기: 바꾸기 싫으면 주석처리 */
-        operand_x->sign = NEGATIVE;
+        //operand_x->sign = NEGATIVE;
        // operand_y->sign = NEGATIVE;
 
         /* 연산 */
-    	bi_add(&result, operand_x, operand_y);
+    	bi_sub(&result, operand_x, operand_y);
 
         /* 연산 결과 저장 */
         write_integer_into_file(f_result, result);

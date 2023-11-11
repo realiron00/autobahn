@@ -253,12 +253,11 @@ void test6()
     bi_delete(&result);
     bi_delete(&quotient);
     bi_delete(&remainder);
-
 }
 
 int main()
 {
-	int num=3;
+	int num=6;
 	switch(num)
 	{
 		case 1:
@@ -279,15 +278,10 @@ int main()
 		case 6:
 			test6();
 			break;
-		case 7:
-			bi_test();
-			break;
-		case 8:
-			bi_test_div();
-			break;
 		default:
 			printf("wrong number\n");
 			break;
 	}
+	//bi_test();
 	return 0;
 }
