@@ -255,6 +255,37 @@ void test6()
     bi_delete(&remainder);
 }
 
+void test7()
+{
+	bi* operand_x = NULL;
+    bi* operand_y = NULL;
+    bi* result = NULL;
+    bi* quotient = NULL;
+    bi* remainder = NULL;
+
+    bi_new(&operand_x, 1);
+    bi_new(&operand_y, 1);
+    bi_new(&result, 1);
+    bi_new(&quotient, 1);
+    bi_new(&remainder, 1);
+
+    bi_set_by_str(&operand_x, "3ffffffff", POSITIVE, HEXADECIMAL);
+    bi_set_by_str(&operand_y, "3", POSITIVE, HEXADECIMAL);
+
+    bi_show_hex(operand_x);
+    bi_show_hex(operand_y);
+
+    bi_div_naive(&quotient, &remainder, operand_x, operand_y);
+    bi_show_hex(quotient);
+    bi_show_hex(remainder);
+
+    bi_delete(&operand_x);
+    bi_delete(&operand_y);
+    bi_delete(&result);
+    bi_delete(&quotient);
+    bi_delete(&remainder);
+}
+
 int main()
 {
 	int num;
@@ -264,8 +295,9 @@ int main()
 	printf("4. autobahn_mul test\n");
 	printf("5. autobahn_mul 지수승 test\n");
 	printf("6. autobahn_div_long 동현 test\n");
-	printf("7. autobahn_test\n");
-	printf("8. autobahn_div_long test\n");
+	printf("7. autobahn_div_naive test\n");
+	printf("8. autobahn_test\n");
+	printf("9. autobahn_div_long test\n");
 	printf("select number: ");
 	scanf("%d", &num);
 	switch(num)
@@ -289,9 +321,12 @@ int main()
 			test6();
 			break;
 		case 7:
+			test7();
+			break;	
+		case 8:
 			bi_test();
 			break;
-		case 8:
+		case 9:
 			bi_test_div();
 			break;
 		default:

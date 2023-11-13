@@ -1,39 +1,7 @@
 #include "autobahn.h"
 
-/****************************************************************************************
- * bi_div_long
- * x=yq+r(0<=r<y)
- * 
- * input
- * q: quotient
- * r: remainder
- * x: dividend
- * y: divisor
- ****************************************************************************************/
-void bi_div_long(bi** q, bi** r, bi* x, bi* y)
+void div_long(bi** q, bi** r, bi* x, bi* y)
 {
-    //if y <= 0 or x < 0, return INVALID
-    if ((bi_is_zero(y) && y->sign == 1)|| x->sign == 1)
-    {
-        exit(1);
-    }
-
-    //if x < y, return q = 0, r = x
-    if (bi_cmp(x,y) == -1)
-    {
-        bi_set_zero(q);
-        bi_cpy(r,x);
-        return;
-    }
-
-    //if y = 1, return q = x, r = 0
-    if(bi_is_one(y))
-    {
-        bi_cpy(q,x);
-        bi_set_zero(r);
-        return;
-    }
-
     //q_temp : temporary quotient
     //r_temp : temporary remainder
     bi* q_temp = NULL;
@@ -104,6 +72,116 @@ void bi_div_long(bi** q, bi** r, bi* x, bi* y)
     bi_delete(&bi_two);
     bi_delete(&two_squ);
     bi_delete(&x_bit);
+}
+
+/****************************************************************************************
+ * bi_div_long
+ * x=yq+r(0<=r<y)
+ * 
+ * input
+ * q: quotient
+ * r: remainder
+ * x: dividend
+ * y: divisor
+ ****************************************************************************************/
+void bi_div_long(bi** q, bi** r, bi* x, bi* y)
+{
+    //if y <= 0 or x < 0, return INVALID
+    if ((bi_is_zero(y) && y->sign == 1)|| x->sign == 1)
+    {
+        exit(1);
+    }
+
+    //if x < y, return q = 0, r = x
+    if (bi_cmp(x,y) == -1)
+    {
+        bi_set_zero(q);
+        bi_cpy(r,x);
+        return;
+    }
+
+    //if y = 1, return q = x, r = 0
+    if(bi_is_one(y))
+    {
+        bi_cpy(q,x);
+        bi_set_zero(r);
+        return;
+    }
+
+    div_long(q,r,x,y);
     
     return;
+}
+
+/****************************************************************************************
+ * bi_div_naive
+ * x=yq+r(0<=r<y)
+ * 
+ * input
+ * q: quotient
+ * r: remainder
+ * x: dividend
+ * y: divisor
+ ****************************************************************************************/
+void bi_div_naive(bi** q, bi** r, bi* x, bi* y)
+{
+    //if y <= 0 or x < 0, return INVALID
+    if ((bi_is_zero(y) && y->sign == 1)|| x->sign == 1)
+    {
+        exit(1);
+    }
+
+    //if x < y, return q = 0, r = x
+    if (bi_cmp(x,y) == -1)
+    {
+        bi_set_zero(q);
+        bi_cpy(r,x);
+        return;
+    }
+
+    //if y = 1, return q = x, r = 0
+    if(bi_is_one(y))
+    {
+        bi_cpy(q,x);
+        bi_set_zero(r);
+        return;
+    }
+
+    //q_temp : temporary quotient
+    //r_temp : temporary remainder
+    bi* q_temp = NULL;
+    bi* r_temp = NULL;
+    bi_new(&q_temp, (x->dmax)-(y->dmax)+1);
+    bi_new(&r_temp, y->dmax);
+
+    bi_set_zero(&q_temp); //initialize q_temp
+    bi_cpy(&r_temp,x); //r_temp = x
+
+    //bi_one : bi storing 1
+    bi* bi_one = NULL;
+    bi_new(&bi_one, 1);
+    bi_one->a[0]=0x01;
+
+    //Naive division
+    while(bi_cmp(r_temp,y)>=0) //while remainder >= divisor
+    {
+        //quotient = quotient + 1
+        bi_add(&q_temp,q_temp,bi_one);
+
+        //remainder = remainder - divisor
+        bi_sub(&r_temp,r_temp,y);
+    }
+
+    //refine quotient and remainder to remove leading zeros
+    bi_refine(q_temp);
+    bi_refine(r_temp);
+
+    //copy quotient and remainder to output variables q and r
+    bi_cpy(q,q_temp);
+    bi_cpy(r,r_temp);
+
+    //Delete the temporary storage
+    bi_delete(&q_temp);
+    bi_delete(&r_temp);
+    bi_delete(&bi_one);
 }
