@@ -175,3 +175,8 @@ void bi_div_naive(bi** q, bi** r, bi* x, bi* y)
     bi_delete(&r_temp);
     bi_delete(&bi_one);
 }
+
+void bi_div_general_long(bi** q, bi** r, bi* x, bi* y)
+{
+
+}

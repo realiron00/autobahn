@@ -11,5 +11,6 @@ void bi_test();
 void bi_test_div();
 void bi_div_long(bi** q, bi** r, bi* x, bi* y);
 void bi_div_naive(bi** q, bi** r, bi* x, bi* y);
+void bi_div_general_long(bi** q, bi** r, bi* x, bi* y);
 
 #endif
