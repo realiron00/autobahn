@@ -116,7 +116,7 @@ void test3()
 
     x->a[0]=0x3ff;
 
-	y->a[0]=0x34;
+	y->a[0]=0x34ffff;
 
 	printf("x Sign: %u\n", x->sign);
 	printf("x Dmax: %u\n", x->dmax);
