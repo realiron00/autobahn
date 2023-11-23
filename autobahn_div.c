@@ -219,9 +219,9 @@ void divc(bi** q, bi** r, bi* x, bi* y, int i)
         bi_cpy(r,x);
         return;
     }
+    //find k such that 2^k*y->a[y->dmax-1] ∈ [2^w-1, 2^w)
 }
 
-//bi_div_general_long: Multi-Precision Long Division
 /*
 Multi-Precision Long Division
 A = A_0 + A_1*W^1 + ... + A_n-1*W^n-1, B (A_j ∈ [0, W))
