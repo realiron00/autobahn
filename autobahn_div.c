@@ -177,24 +177,6 @@ void bi_div_naive(bi** q, bi** r, bi* x, bi* y)
 }
 
 /*
-Multi-Precision Long Division
-A = A_0 + A_1*W^1 + ... + A_n-1*W^n-1, B (A_j ∈ [0, W))
-Output: (Q = Q_0 + Q_1*W^1 + ... + Q_n-1*W^n-1, R)
-such that A = BQ + R (0 ≤ R < B, Q_j ∈ [0, W)).
-1: procedure DIVlong(A, B)
-2: if A < B then
-3: return (0, A)
-4: end if
-5: R_n ← 0
-6: for i = n − 1 downto 0 do
-7: (Q_i, R_i) ← DIVC(R_i+1*W + A_i, B). 
-8: end for
-9: Q ← Q_0 + Q_1*W + ... + Q_n−1*W^n−1
-10: return (Q, R0)
-11: end procedure
-*/
-
-/*
 2-word long division
 Input: A = A_1W + A_0, B
 (A_1, A_0 ∈ [0, W), B ∈ [2^w−1, 2^w), A_1 < B, A0 = a_0 + a_1*2^1 + ... + a_w-1*2^w-1)
@@ -213,10 +195,93 @@ Output: Q such that A = BQ + R (0 ≤ R < B, Q_j ∈ [0, W)).
 12: return Q
 */
 
+/*
+DIVC(a, b)
+input: A = A_0 + A_1*W^1 + ... + A_m*W^m, B = B_0 + B_1*W^1 + ... + B_m-1*W^m-1 (A_j, B_j ∈ [0, W), 0 ≤ A < BW)
+Output: (Q, R) such that A = BQ + R (0 ≤ R < B, Q ∈ [0, W)).
+1: procedure DIVC(A, B)
+2: if A < B then
+3:  return (0, A)
+4: end if
+5: Compute k ∈ Z≥0 such that 2^k*B_m−1 ∈ [2^w−1, 2^w)
+6: A', B' ← 2^k*A, 2^k*B
+7: Q', R' ← DIVCC(A', B')
+8: Q, R ← Q', 2^−k*R'
+9: return (Q, R)
+10: end procedure
+*/
+void divc(bi** q, bi** r, bi* x, bi* y, int i)
+{
+    //if x < y, return q = 0, r = x
+    if (bi_cmp(x,y) == -1)
+    {
+        (*q)->a[i] = 0;
+        bi_cpy(r,x);
+        return;
+    }
+}
+
 //bi_div_general_long: Multi-Precision Long Division
+/*
+Multi-Precision Long Division
+A = A_0 + A_1*W^1 + ... + A_n-1*W^n-1, B (A_j ∈ [0, W))
+Output: (Q = Q_0 + Q_1*W^1 + ... + Q_n-1*W^n-1, R)
+such that A = BQ + R (0 ≤ R < B, Q_j ∈ [0, W)).
+1: procedure DIVlong(A, B)
+2: if A < B then
+3: return (0, A)
+4: end if
+5: R_n ← 0
+6: for i = n − 1 downto 0 do
+7: (Q_i, R_i) ← DIVC(R_i+1*W + A_i, B). 
+8: end for
+9: Q ← Q_0 + Q_1*W + ... + Q_n−1*W^n−1
+10: return (Q, R0)
+11: end procedure
+*/
 void bi_div_general_long(bi** q, bi** r, bi* x, bi* y)
 {
     bi_div_discriminant(q, r, x, y);
 
-    
+    bi* r_temp = NULL;
+    bi_new(&r_temp, y->dmax);
+    bi_set_zero(&r_temp); //initialize r_temp
+
+    bi* q_temp = NULL;
+    bi_new(&q_temp, (x->dmax)-(y->dmax)+1);
+
+    bi* r_temp2 = NULL;
+    bi_new(&r_temp2, 2);
+
+    bi* x_temp = NULL;
+    bi_new(&x_temp, 1);
+
+    bi* rwa = NULL;
+    bi_new(&rwa, 2);
+
+    for(int i=x->dmax-1; i>=0; i--)
+    {
+        //r_temp = r_temp * W + x->a[i]
+        r_temp2->a[1] = r_temp->a[0];
+        x_temp->a[0] = x->a[i];
+        bi_add(&rwa, r_temp2, x_temp);
+        divc(&q_temp, &r_temp, rwa, y, i);
+    }
+
+    //refine quotient and remainder to remove leading zeros
+    bi_refine(q_temp);
+    bi_refine(r_temp);
+
+    //copy quotient and remainder to output variables q and r
+    bi_cpy(q,q_temp);
+    bi_cpy(r,r_temp);
+
+    //Delete the temporary storage
+    bi_delete(&r_temp);
+    bi_delete(&q_temp);
+    bi_delete(&r_temp2);
+    bi_delete(&x_temp);
+    bi_delete(&rwa);
+
+    return;
 }
