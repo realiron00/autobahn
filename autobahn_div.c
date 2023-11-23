@@ -193,6 +193,7 @@ such that A = BQ + R (0 ≤ R < B, Q_j ∈ [0, W)).
 10: return (Q, R0)
 11: end procedure
 */
+
 /*
 2-word long division
 Input: A = A_1W + A_0, B
@@ -213,7 +214,6 @@ Output: Q such that A = BQ + R (0 ≤ R < B, Q_j ∈ [0, W)).
 */
 
 //bi_div_general_long: Multi-Precision Long Division
-//DIVC : 2-word long division
 void bi_div_general_long(bi** q, bi** r, bi* x, bi* y)
 {
     bi_div_discriminant(q, r, x, y);
