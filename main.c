@@ -310,50 +310,66 @@ void test7()
 
 int main()
 {
-	int num;
-	printf("1. autobahn_common test\n");
-	printf("2. autobahn_sub test\n");
-	printf("3. autobahn_div test\n");
-	printf("4. autobahn_mul test\n");
-	printf("5. autobahn_mul 지수승 test\n");
-	printf("6. autobahn_div_long 동현 test\n");
-	printf("7. autobahn_div_naive test\n");
-	printf("8. autobahn_test\n");
-	printf("9. autobahn_div_long test\n");
-	printf("select number: ");
-	scanf("%d", &num);
-	switch(num)
+	// int num;
+	// printf("1. autobahn_common test\n");
+	// printf("2. autobahn_sub test\n");
+	// printf("3. autobahn_div test\n");
+	// printf("4. autobahn_mul test\n");
+	// printf("5. autobahn_mul 지수승 test\n");
+	// printf("6. autobahn_div_long 동현 test\n");
+	// printf("7. autobahn_div_naive test\n");
+	// printf("8. autobahn_test\n");
+	// printf("9. autobahn_div_long test\n");
+	// printf("select number: ");
+	// scanf("%d", &num);
+	// switch(num)
+	// {
+	// 	case 1:
+	// 		test1();
+	// 		break;
+	// 	case 2:
+	// 		test2();
+	// 		break;
+	// 	case 3:
+	// 		test3();
+	// 		break;
+	// 	case 4:
+	// 		test4();
+	// 		break;
+	// 	case 5:
+	// 		test5();
+	// 		break;	
+	// 	case 6:
+	// 		test6();
+	// 		break;
+	// 	case 7:
+	// 		test7();
+	// 		break;	
+	// 	case 8:
+	// 		bi_test();
+	// 		break;
+	// 	case 9:
+	// 		bi_test_div();
+	// 		break;
+	// 	default:
+	// 		printf("wrong number\n");
+	// 		break;
+	// }
+
+	bi* x = NULL;
+    
+    bi_new(&x, 1);
+    
+    x->a[0]=0b111;
+
+	bi_word jjj = x->a[0];
+	int k=0;
+	//find k such that 2^k*(x->a[x->dmax-1]) ∈ [2^w-1, 2^w) (w=32)
+	while(jjj>0)
 	{
-		case 1:
-			test1();
-			break;
-		case 2:
-			test2();
-			break;
-		case 3:
-			test3();
-			break;
-		case 4:
-			test4();
-			break;
-		case 5:
-			test5();
-			break;	
-		case 6:
-			test6();
-			break;
-		case 7:
-			test7();
-			break;	
-		case 8:
-			bi_test();
-			break;
-		case 9:
-			bi_test_div();
-			break;
-		default:
-			printf("wrong number\n");
-			break;
+		jjj = jjj<<1;
+		k++;
 	}
+	printf("%d\n",k);
 	return 0;
 }

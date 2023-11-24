@@ -1,5 +1,64 @@
 #include "autobahn.h"
 
+//shift_left
+void shift_left(bi** z, int shiftAmount) {
+    // If shiftAmount is less than or equal to 0 or the bi structure is empty, do nothing.
+    if (shiftAmount <= 0 || !z || !(*z)) {
+        return;
+    }
+
+    // Create a temporary bignum (temp) with an increased block count to accommodate the left shift.
+    bi* temp = NULL;
+
+    bi_new(&temp, (*z)->dmax + shiftAmount);
+
+    // Copy the left-shifted values from z to the temp structure.
+    for (int i = 0; i < (*z)->dmax; i++) {
+
+        int sourceIndex = i;
+        int destinationIndex = i + shiftAmount;
+
+        if (destinationIndex < temp->dmax) {
+
+            temp->a[destinationIndex] = (*z)->a[sourceIndex];
+        }
+    }
+
+    // Copy the contents of temp back to z.
+    bi_cpy(z, temp);
+
+    // Clean up memory by deleting the temp structure.
+    bi_delete(&temp);
+}
+
+// shift_right
+void shift_right(bi** z, int shiftAmount) {
+    // If shiftAmount is less than or equal to 0 or the bi structure is empty, do nothing.
+    if (shiftAmount <= 0 || !z || !(*z)) {
+        return;
+    }
+
+    // Create a temporary bignum (temp) with the same block count as z.
+    bi* temp = NULL;
+    bi_new(&temp, (*z)->dmax);
+
+    // Copy the right-shifted values from z to the temp structure.
+    for (int i = 0; i < (*z)->dmax; i++) {
+        int sourceIndex = i;
+        int destinationIndex = i - shiftAmount;  // Shift to the right.
+
+        if (destinationIndex >= 0) {
+            temp->a[destinationIndex] = (*z)->a[sourceIndex];
+        }
+    }
+
+    // Copy the contents of temp back to z.
+    bi_cpy(z, temp);
+
+    // Clean up memory by deleting the temp structure.
+    bi_delete(&temp);
+}
+
 /****************************************************************************************
  * bi_div_discriminant
  * x=yq+r(0<=r<y)
@@ -194,6 +253,106 @@ Output: Q such that A = BQ + R (0 ≤ R < B, Q_j ∈ [0, W)).
 11: end for
 12: return Q
 */
+void word2_long_div(bi_word* q, bi_word x1, bi_word x0, bi_word y)
+{
+    bi_word q_temp = 0;
+    bi_word r_temp = x1;
+}
+
+/*
+DIVCC(A, B)
+Input: A = A_0 + A_1*W^1 + ... + A_n-1*W^n-1, B = B_0 + B_1*W^1 + ... + B_m-1*W^m-1 
+(A_j , B_j ∈ [0, W), 0 < B ≤ A < BW, B_m−1 ≥ 2^w−1)
+Output: (Q, R) such that A = BQ + R (0 ≤ R < B, Q ∈ [0, W)).
+1: procedure DIVCC(A, B)
+2: if n = m then
+3:  Q ← A_m-1/B_m-1 . Q ∈ [0, W)
+4: end if
+5: if n = m + 1 then
+6:  if A_m = B_m−1 then
+7:      Q ← W − 1
+8:  else . Am < Bm−1
+9:      Q ← 2word_long_div(A_mW + A_m−1, B_m−1) . Q ∈ [0, W)
+10: end if
+11: end if
+12: R ← A − BQ . Q ∈ [0, W)
+13: while R < 0 do
+14:     (Q, R) ← (Q − 1, R + B) . At most 2 computations
+15: end while
+16: return (Q, R)
+17: end procedure
+*/
+void divcc(bi** q, bi** r, bi* x, bi* y)
+{
+    bi_refine(x);
+    bi_refine(y);
+
+    bi* q_temp = NULL;
+    bi_new(&q_temp, (x->dmax)-(y->dmax)+1);
+    bi_set_zero(&q_temp);
+
+    bi* r_temp = NULL;
+    bi_new(&r_temp, y->dmax);
+    bi_set_zero(&r_temp);
+
+    //if n = m then
+    if(x->dmax == y->dmax)
+    {
+        //Q ← A_m-1/B_m-1 . Q ∈ [0, W)
+        bi_word temp = x->a[x->dmax-1] / y->a[y->dmax-1];
+        q_temp->a[0] = temp;
+    }
+
+    //if n = m + 1 then
+    else if(x->dmax == y->dmax+1)
+    {
+        //if A_m = B_m−1 then
+        if(x->a[x->dmax-1] == y->a[y->dmax-1])
+        {
+            //Q ← W − 1
+            q_temp->a[0] = 0xFFFFFFFF;
+        }
+        //else . Am < Bm−1
+        else if(x->a[x->dmax-1] < y->a[y->dmax-1])
+        {
+            bi_word q_temp2=0;
+            //x_temp1 : bi_word storing x->a[y->dmax-1]
+            //x_temp2 : bi_word storing x->a[y->dmax-2]
+            bi_word x_temp1 = x->a[y->dmax-1];
+            bi_word x_temp2 = x->a[y->dmax-2];
+            //y_temp : bi_word storing y->a[y->dmax-1]
+            bi_word y_temp = y->a[y->dmax-1];
+
+            word2_long_div(&q_temp2, x_temp1, x_temp2, y_temp);
+            q_temp->a[0] = q_temp2;
+        }
+    }
+
+    //R ← A − BQ . Q ∈ [0, W)
+    bi* temp = NULL;
+    bi_new(&temp, y->dmax);
+    bi_mul_improved(&temp, q_temp, y);
+    bi_sub(&r_temp, x, temp);
+
+    //while R < 0 do
+    while(r_temp->sign == NEGATIVE)
+    {
+        //(Q, R) ← (Q − 1, R + B) . At most 2 computations
+        bi_sub(&q_temp, q_temp, 1);
+        bi_add(&r_temp, r_temp, y);
+    }
+
+    //copy quotient and remainder to output variables q and r
+    bi_cpy(q,q_temp);
+    bi_cpy(r,r_temp);
+
+    //Delete the temporary storage
+    bi_delete(&q_temp);
+    bi_delete(&r_temp);
+    bi_delete(&temp);
+
+    return;
+}
 
 /*
 DIVC(a, b)
@@ -206,6 +365,7 @@ Output: (Q, R) such that A = BQ + R (0 ≤ R < B, Q ∈ [0, W)).
 5: Compute k ∈ Z≥0 such that 2^k*B_m−1 ∈ [2^w−1, 2^w)
 6: A', B' ← 2^k*A, 2^k*B
 7: Q', R' ← DIVCC(A', B')
+
 8: Q, R ← Q', 2^−k*R'
 9: return (Q, R)
 10: end procedure
@@ -219,7 +379,65 @@ void divc(bi** q, bi** r, bi* x, bi* y, int i)
         bi_cpy(r,x);
         return;
     }
-    //find k such that 2^k*y->a[y->dmax-1] ∈ [2^w-1, 2^w)
+    //find k such that 2^k*y->a[y->dmax-1] ∈ [2^w-1, 2^w) (w=32)
+    int k = 0;
+    bi_word temp = y->a[y->dmax-1];
+    while(temp < 0x80000000)
+    {
+        temp = temp << 1;
+        k++;
+    }
+
+    //two_squ : bi storing 2^k 
+    bi* two_squ=NULL;
+    bi_new(&two_squ, 1);
+    two_squ->a[0]=0x01;
+
+    //bi_two : bi storing 2
+    bi* bi_two = NULL;
+    bi_new(&bi_two, 1);
+    bi_two->a[0]=0x02;
+
+    for(int j=0; j<k; j++)
+    {
+        bi_mul_improved(&two_squ,two_squ, bi_two);
+    }
+
+    //A', B' ← 2^k*A, 2^k*B
+    bi* x_temp = NULL;
+    bi_new(&x_temp, x->dmax+1);
+    bi_mul_improved(&x_temp, x, two_squ);
+
+    bi* y_temp = NULL;
+    bi_new(&y_temp, y->dmax+1);
+    bi_mul_improved(&y_temp, y, two_squ);
+
+    bi* q_temp = NULL; 
+    bi_new(&q_temp, (x_temp->dmax)-(y_temp->dmax)+1);
+    bi_set_zero(&q_temp);
+
+    bi* r_temp = NULL;
+    bi_new(&r_temp, y_temp->dmax);
+    bi_set_zero(&r_temp);
+
+    //Q', R' ← DIVCC(A', B')
+    divcc(&q_temp, &r_temp, x_temp, y_temp);
+
+    //k_temp : bi storing 2^(-k)
+    //2^(-k) * 2^k = 2^32
+    //-k = 32 - k
+    bi* k_temp = NULL;
+    bi_new(&k_temp, 1);
+    k_temp->a[0]=0x01;
+    for(int j=0; j<32-k; j++)
+    {
+        bi_mul_improved(&k_temp,k_temp, bi_two);
+    }
+
+    //Q, R ← Q', 2^−k*R'
+    bi_mul_improved(&r_temp, r_temp, k_temp);
+    bi_cpy(q, q_temp);
+    bi_cpy(r, r_temp);
 }
 
 /*
