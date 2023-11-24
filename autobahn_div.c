@@ -196,10 +196,6 @@ Output: Q such that A = BQ + R (0 ≤ R < B, Q_j ∈ [0, W)).
 */
 void word2_long_div(bi_word* q, bi_word x1, bi_word x0, bi_word y)
 {
-    printf("x1 : %x\n", x1);
-    printf("x0 : %x\n", x0);
-    printf("y : %x\n", y);
-
     bi_word q_word = 0;
 
     bi* q_temp = NULL;
@@ -209,22 +205,10 @@ void word2_long_div(bi_word* q, bi_word x1, bi_word x0, bi_word y)
     bi* r_temp = NULL;
     bi_new(&r_temp, 2);
     r_temp->a[0] = x1;
-    printf("r_temp :");
-    for(int i=0;i<r_temp->dmax;i++)
-    {
-        printf("%x ", r_temp->a[i]);
-    }
-    printf("\n");
 
     bi* temp_231 = NULL;
     bi_new(&temp_231, 1);
     temp_231->a[0] = 0x80000000;
-    printf("temp_231 :");
-    for(int i=0;i<temp_231->dmax;i++)
-    {
-        printf("%x ", temp_231->a[i]);
-    }
-    printf("\n");
 
     bi* aj_temp = NULL;
     bi_new(&aj_temp, 1);
@@ -271,6 +255,12 @@ void word2_long_div(bi_word* q, bi_word x1, bi_word x0, bi_word y)
     }
 
     *q = q_temp->a[0];
+
+    bi_delete(&q_temp);
+    bi_delete(&r_temp);
+    bi_delete(&temp_231);
+    bi_delete(&aj_temp);
+    bi_delete(&y_temp);
 
     return;
 
@@ -341,7 +331,7 @@ void divcc(bi** q, bi** r, bi* x, bi* y)
     }
 
     //if n = m + 1 then
-    if(x->dmax == y->dmax+1)
+    else
     {
         //if A_m = B_m−1 then
         if(x->a[y->dmax] == y->a[y->dmax-1])

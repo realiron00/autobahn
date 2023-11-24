@@ -116,7 +116,7 @@ void bi_test_div()
             fprintf(f_result_r, "DIV0!\n");
         } else {
             /* 연산 */
-    	    bi_div_general_long(&quotient, &remainder, operand_x, operand_y);
+    	    bi_div_long(&quotient, &remainder, operand_x, operand_y);
 
             /* 연산 결과 저장 */
             write_integer_into_file(f_result_q, quotient);
