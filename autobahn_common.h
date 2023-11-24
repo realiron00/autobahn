@@ -45,6 +45,8 @@ typedef int32_t bi_word;    ///< Signed 64-bit word for big integers.
 typedef uint32_t bi_uword;  ///< Unsigned 64-bit word for big integers.
 #endif
 
+#define BITLEN_OF_WORD (sizeof(bi_word) * 8)
+
 /**
  * @enum base
  * @brief Enumeration representing different numerical bases.
@@ -105,7 +107,6 @@ void bi_delete(bi** x);
  */
 void bi_refine(bi* x);
 
-//TODO 0출력되는 문제 해결 필요
 /**
  * @brief Display the big integer in binary format
  * 
@@ -113,7 +114,7 @@ void bi_refine(bi* x);
  */
 void bi_show_bin(const bi* x);
 
-//TODO DH가 나중에 구현
+//TODO Comming Soon...
 /**
  * @brief Display the big integer in decimal format
  * 
@@ -121,7 +122,6 @@ void bi_show_bin(const bi* x);
  */
 void bi_show_dec(const bi* x);
 
-//TODO 0출력되는 문제 해결 필요
 /**
  * @brief Display the big integer in hexadecimal format
  * 
@@ -180,7 +180,6 @@ void bi_cpy(bi** y, const bi* x);
  */
 bi_word bi_cmp(const bi* x, const bi* y);
 
-//TODO DH가 나중에 구현
 /**
  * @brief Generate a random big integer
  * 

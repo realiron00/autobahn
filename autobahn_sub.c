@@ -2,17 +2,17 @@
 
 /**
  * @brief Perform block-wise subtraction using borrow (__sbb) for big integers (A - B - C = D).
- * 
+ *
  * This function performs block-wise subtraction using borrow for big integers.
  * Given three big integer values A, B, and a borrow value C, it calculates the
  * difference D = A - B - C. The result D is stored in the 'z' parameter, and the
  * next borrow value is stored in 'b'.
- * 
+ *
  * @param z Pointer to a bi_uword where the result of subtraction (D) will be stored.
  * @param b Pointer to a bi_uword representing the borrow value (C).
  * @param x Pointer to a bi_uword representing the first operand (A).
  * @param y Pointer to a bi_uword representing the second operand (B).
- * 
+ *
  * @note
  * - This function performs block-wise subtraction with borrow, considering the
  *   values of 'x', 'y', and the current borrow value 'b'.
@@ -44,16 +44,16 @@ static void __sbb(bi_uword* z, bi_uword* b, const bi_uword* x, const bi_uword* y
 
 /**
  * @brief Perform unsigned subtraction (bi_usub) of two large positive big integers (A - B = Z).
- * 
+ *
  * This function performs unsigned subtraction of two large positive big integers, 'x'
  * and 'y', and stores the result in 'z'. The subtraction is done block by block,
  * and any borrow values are handled. The result 'z' is a new big integer, and
  * any leading zeros are removed to refine the result.
- * 
+ *
  * @param z Pointer to a bi structure where the result of the unsigned subtraction will be stored.
  * @param x Pointer to a bi structure representing the minuend 'A'.
  * @param y Pointer to a bi structure representing the subtrahend 'B'.
- * 
+ *
  * @note
  * - If the dmax of 'y' is different from that of 'x', the function reallocates
  *   memory for 'y' to match the dmax of 'x'.
@@ -69,18 +69,18 @@ static void bi_usub(bi** z, const bi* x, bi* y)
         (y->a) = (bi_uword*)realloc(y->a, (x->dmax) * sizeof(bi_uword));
 
     // Initialize the borrow value 'b' to zero
-    bi_uword b = 0, d=0;
+    bi_uword b = 0, d = 0;
 
     // Create a temporary big integer 'sub' to store the result of subtraction
     bi* sub = NULL;
     bi_new(&sub, x->dmax);
 
     // Perform block-wise subtraction, considering borrow values
-    for (int j=0;j<x->dmax;j++) {
+    for (int j = 0; j < x->dmax; j++) {
         //subtraction of each block
         __sbb(&d, &b, &(x->a[j]), &(y->a[j]));
-        sub->a[j]=d; //store result of subtraction to sub
-        d=0; //initialize d
+        sub->a[j] = d; //store result of subtraction to sub
+        d = 0; //initialize d
     }
 
     // Refine 'y' to remove leading zeros
@@ -99,16 +99,16 @@ static void bi_usub(bi** z, const bi* x, bi* y)
 
 /**
  * @brief Perform binary subtraction (bi_sub) of two big integers.
- * 
+ *
  * This function subtracts two big integers 'x' and 'y' and stores the result
  * in 'z'. The subtraction considers the signs of the operands and performs
  * the appropriate subtraction. The result 'z' is stored as a new big integer,
  * and any leading zeros in 'z' are removed to refine the result.
- * 
+ *
  * @param z Pointer to a bi structure where the result of the subtraction will be stored.
  * @param x Pointer to a bi structure representing the first operand 'x'.
  * @param y Pointer to a bi structure representing the second operand 'y'.
- * 
+ *
  * @note
  * - The function checks the signs of 'x' and 'y' and performs addition or
  *   subtraction accordingly.
@@ -120,28 +120,35 @@ static void bi_usub(bi** z, const bi* x, bi* y)
  *   - If 'x' is equal to 'y', 'z' will be set to zero.
  * - The result 'z' is refined to remove leading zeros.
  */
-void bi_sub(bi** z, bi* x, bi* y)
+void bi_sub(bi** z, bi* temp_x, bi* temp_y)
 {
+    bi* x = NULL;
+    bi* y = NULL;
+    bi_cpy(&x, temp_x);
+    bi_cpy(&y, temp_y);
+
     // If x = 0, set z = -y or y
     if (bi_is_zero(x)) {
         bi_cpy(z, y);
-        if (y->sign == POSITIVE && bi_is_zero(y) == false)
+        if (y->sign == POSITIVE)
             (*z)->sign = NEGATIVE;
-            return;
-        
-        (*z)->sign = POSITIVE;
+        else
+            (*z)->sign = POSITIVE;
+        bi_delete(&x); bi_delete(&y);
         return;
     }
 
     // If y = 0, set z = x
     if (bi_is_zero(y)) {
         bi_cpy(z, x);
+        bi_delete(&x); bi_delete(&y);
         return;
     }
 
     // If x = y, set z = 0
     if (bi_cmp(x, y) == 0) {
         bi_set_zero(z);
+        bi_delete(&x); bi_delete(&y);
         return;
     }
 
@@ -150,11 +157,14 @@ void bi_sub(bi** z, bi* x, bi* y)
         if (bi_cmp(x, y) == 1) {
             // z = x - y
             bi_usub(z, x, y);
+            bi_delete(&x); bi_delete(&y);
             return;
-        } else {
+        }
+        else {
             // z = -(y - x)
             bi_usub(z, y, x);
             (*z)->sign = NEGATIVE;
+            bi_delete(&x); bi_delete(&y);
             return;
         }
     }
@@ -164,11 +174,14 @@ void bi_sub(bi** z, bi* x, bi* y)
         if (bi_cmp(x, y) == 1) {
             // z = |y| - |x|
             bi_usub(z, y, x);
+            bi_delete(&x); bi_delete(&y);
             return;
-        } else {
+        }
+        else {
             // z = -(|x| - |y|)
             bi_usub(z, x, y);
             (*z)->sign = NEGATIVE;
+            bi_delete(&x); bi_delete(&y);
             return;
         }
     }
@@ -177,11 +190,14 @@ void bi_sub(bi** z, bi* x, bi* y)
     else if (x->sign == POSITIVE && y->sign == NEGATIVE) {
         // z = x + |y|
         bi_add(z, x, y);
+        bi_delete(&x); bi_delete(&y);
         return;
-    } else if (x->sign == NEGATIVE && y->sign == POSITIVE) {
+    }
+    else if (x->sign == NEGATIVE && y->sign == POSITIVE) {
         // z = -(|x| + y)
         bi_add(z, x, y);
         (*z)->sign = NEGATIVE;
+        bi_delete(&x); bi_delete(&y);
         return;
     }
 }

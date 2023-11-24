@@ -2,18 +2,13 @@
 
 int main()
 {
-    int k = 0;
-    unsigned int temp = 0b11110010010;
-    while(1)
-    {
-        temp = temp << 1;
-
-        if(temp > 0x80000000) break;
-
-        k++;
-    }
-    printf("%d\n", k);
-    return 0;
+    //k=2
+    //a=0x14
+    //b=2^(-k)*a=0x05
+    int j=7;
+    int a=0;
+    a = 1 << j;
+    printf("a: %d\n", a);
 }
 
 /*

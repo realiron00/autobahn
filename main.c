@@ -191,7 +191,7 @@ void test4()
 	bi* z = NULL;
 	bi_new(&z, 2);
 
-	bi_mul_improved(&z, x, y);
+	bi_textbook_mul(&z, x, y);
 
 	printf("z Sign: %u\n", z->sign);
 	printf("z Dmax: %u\n", z->dmax);
@@ -213,7 +213,7 @@ void test5()
 	x2->a[0]=0x02;
 
 	for(int j=10; j>0; j--){
-		bi_mul_improved(&x,x,x2);
+		bi_textbook_mul(&x,x,x2);
 	}
 	printf("x dmax: %d\n", x->dmax);
 	printf("x Digits: ");
@@ -362,9 +362,9 @@ int main()
     bi_new(&x, 1);
     bi_new(&y, 1);
 
-    x->a[0]=0x3fff;
+    x->a[0]=10054;
 
-	y->a[0]=0x34;
+	y->a[0]=736;
 
 	printf("x Sign: %u\n", x->sign);
 	printf("x Dmax: %u\n", x->dmax);
@@ -406,58 +406,6 @@ int main()
 	{
 		printf("%d ", r->a[i]);
 	}
-
-
-
-	// bi* x = NULL;
-    // bi* y = NULL;
-
-    // bi_new(&x, 1);
-    // bi_new(&y, 1);
-
-    // x->a[0]=0x3fff;
-
-	// y->a[0]=0x34;
-
-	// printf("x Sign: %u\n", x->sign);
-	// printf("x Dmax: %u\n", x->dmax);
-	// printf("x Digits: ");
-	// for (int i = 0; i < x->dmax; i++) {
-	// 	printf("%d ", x->a[i]);
-	// }
-	// printf("\n \n");
-
-	// printf("y Sign: %u\n", y->sign);
-	// printf("y Dmax: %u\n", y->dmax);
-	// printf("y Digits: ");
-	// for (int i = 0; i < y->dmax; i++) {
-	// 	printf("%d ", y->a[i]);
-	// }
-	// printf("\n\n");
-
-	// bi* q = NULL;
-	// bi_new(&q, 1);
-
-	// bi* r = NULL;
-	// bi_new(&r, 1);
-
-	// bi_div_long(&q, &r, x, y);
-
-	// printf("q Sign: %u\n", q->sign);
-	// printf("q Dmax: %u\n", q->dmax);
-	// printf("q Digits: ");
-	// for (int i = 0; i < q->dmax; i++) {
-	// 	printf("%d ", q->a[i]);
-	// }
-	// printf("\n\n");
-
-	// printf("r Sign: %u\n", r->sign);
-	// printf("r Dmax: %u\n", r->dmax);
-	// printf("r Digits: ");
-	// for (int i = 0; i < r->dmax; i++) 
-	// {
-	// 	printf("%d ", r->a[i]);
-	// }
 
 	return 0;
 }
