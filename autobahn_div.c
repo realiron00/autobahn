@@ -257,6 +257,26 @@ void word2_long_div(bi_word* q, bi_word x1, bi_word x0, bi_word y)
 {
     bi_word q_temp = 0;
     bi_word r_temp = x1;
+    for(int j=31; j>=0; j--)
+    {
+        if(r_temp >= 0x7FFFFFFF)
+        {
+            q_temp = q_temp + (1 << j);
+            r_temp = 2*r_temp + ((x0 & (1 << j)) >> j) - y;
+        }
+        else
+        {
+            r_temp = 2*r_temp + ((x0 & (1 << j)) >> j);
+            if(r_temp >= y)
+            {
+                q_temp = q_temp + (1 << j);
+                r_temp = r_temp - y;
+            }
+        }
+    }
+
+    *q = q_temp;
+    return;
 }
 
 /*

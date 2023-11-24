@@ -2,8 +2,8 @@
 
 int main()
 {
-    unsigned int x = 36;
-    x = x >> 2;
+    unsigned int x = 0;
+    x = 1 << 2;
     printf("%d", x);
     return 0;
 }
