@@ -334,15 +334,16 @@ Output: (Q, R) such that A = BQ + R (0 ≤ R < B, Q ∈ [0, W)).
 9: return (Q, R)
 10: end procedure
 */
-void divc(bi** q, bi** r, bi* x, bi* y, int i)
+void divc(bi** q, bi** r, bi* x, bi* y)
 {
     //if x < y, return q = 0, r = x
     if (bi_cmp(x,y) == -1)
     {
-        (*q)->a[i] = 0;
+        bi_set_zero(q);
         bi_cpy(r,x);
         return;
     }
+    
     //find k such that 2^k*y->a[y->dmax-1] ∈ [2^w-1, 2^w) (w=32)
     int k = 0;
     bi_word temp = y->a[y->dmax-1];
@@ -423,31 +424,48 @@ such that A = BQ + R (0 ≤ R < B, Q_j ∈ [0, W)).
 */
 void bi_div_general_long(bi** q, bi** r, bi* x, bi* y)
 {
+    //discriminant
     bi_div_discriminant(q, r, x, y);
 
+    //r_temp : temporary remainder
     bi* r_temp = NULL;
     bi_new(&r_temp, y->dmax);
     bi_set_zero(&r_temp); //initialize r_temp
 
+    //q_temp : temporary quotient
     bi* q_temp = NULL;
     bi_new(&q_temp, (x->dmax)-(y->dmax)+1);
 
+    //q_temp2 : temporary quotient[i]
+    bi* q_temp2 = NULL;
+    bi_new(&q_temp2, 1);
+    bi_set_zero(&q_temp2);
+
+    //r_temp2 : temporary remainder[i+1]
     bi* r_temp2 = NULL;
     bi_new(&r_temp2, 2);
+    bi_set_zero(&r_temp2);
 
+    //x_temp : temporary x[i]
     bi* x_temp = NULL;
     bi_new(&x_temp, 1);
 
+    //rwa : temporary remainder[i+1]*W + x[i]
     bi* rwa = NULL;
-    bi_new(&rwa, 2);
+    bi_new(&rwa, y->dmax+1);
 
     for(int i=x->dmax-1; i>=0; i--)
     {
-        //r_temp = r_temp * W + x->a[i]
+        //rwa = r_temp * W + x->a[i]
         r_temp2->a[1] = r_temp->a[0];
         x_temp->a[0] = x->a[i];
         bi_add(&rwa, r_temp2, x_temp);
-        divc(&q_temp, &r_temp, rwa, y, i);
+
+        //DIVC(rwa, y)
+        divc(&q_temp2, &r_temp, rwa, y);
+
+        //Q=Q_0 + Q_1*W + ... + Q_n−1*W^n−1
+        q_temp->a[i] = q_temp2->a[0];
     }
 
     //refine quotient and remainder to remove leading zeros

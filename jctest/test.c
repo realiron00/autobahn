@@ -2,9 +2,17 @@
 
 int main()
 {
-    unsigned int x = 0;
-    x = 1 << 2;
-    printf("%d", x);
+    int k = 0;
+    unsigned int temp = 0b11110010010;
+    while(1)
+    {
+        temp = temp << 1;
+
+        if(temp > 0x80000000) break;
+
+        k++;
+    }
+    printf("%d\n", k);
     return 0;
 }
 
@@ -18,6 +26,7 @@ such that A = BQ + R (0 ≤ R < B, Q_j ∈ [0, W)).
 3: return (0, A)
 4: end if
 5: R_n ← 0
+
 6: for i = n − 1 downto 0 do
 7: (Q_i, R_i) ← DIVC(R_i+1*W + A_i, B).
 8: end for
@@ -34,7 +43,7 @@ Output: (Q, R) such that A = BQ + R (0 ≤ R < B, Q ∈ [0, W)).
 2: if A < B then
 3:  return (0, A)
 4: end if
-5: Compute k ∈ Z≥0 such that 2^k*B_m−1 ∈ [2^w−1, 2^w)
+5: Compute k ∈ Z≥0 such that 2^k*B_(m−1) ∈ [2^31, 2^32)
 6: A', B' ← 2^k*A, 2^k*B
 7: Q', R' ← DIVCC(A', B')
 
