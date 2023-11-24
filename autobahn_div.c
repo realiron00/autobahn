@@ -1,64 +1,5 @@
 #include "autobahn.h"
 
-//shift_left
-void shift_left(bi** z, int shiftAmount) {
-    // If shiftAmount is less than or equal to 0 or the bi structure is empty, do nothing.
-    if (shiftAmount <= 0 || !z || !(*z)) {
-        return;
-    }
-
-    // Create a temporary bignum (temp) with an increased block count to accommodate the left shift.
-    bi* temp = NULL;
-
-    bi_new(&temp, (*z)->dmax + shiftAmount);
-
-    // Copy the left-shifted values from z to the temp structure.
-    for (int i = 0; i < (*z)->dmax; i++) {
-
-        int sourceIndex = i;
-        int destinationIndex = i + shiftAmount;
-
-        if (destinationIndex < temp->dmax) {
-
-            temp->a[destinationIndex] = (*z)->a[sourceIndex];
-        }
-    }
-
-    // Copy the contents of temp back to z.
-    bi_cpy(z, temp);
-
-    // Clean up memory by deleting the temp structure.
-    bi_delete(&temp);
-}
-
-// shift_right
-void shift_right(bi** z, int shiftAmount) {
-    // If shiftAmount is less than or equal to 0 or the bi structure is empty, do nothing.
-    if (shiftAmount <= 0 || !z || !(*z)) {
-        return;
-    }
-
-    // Create a temporary bignum (temp) with the same block count as z.
-    bi* temp = NULL;
-    bi_new(&temp, (*z)->dmax);
-
-    // Copy the right-shifted values from z to the temp structure.
-    for (int i = 0; i < (*z)->dmax; i++) {
-        int sourceIndex = i;
-        int destinationIndex = i - shiftAmount;  // Shift to the right.
-
-        if (destinationIndex >= 0) {
-            temp->a[destinationIndex] = (*z)->a[sourceIndex];
-        }
-    }
-
-    // Copy the contents of temp back to z.
-    bi_cpy(z, temp);
-
-    // Clean up memory by deleting the temp structure.
-    bi_delete(&temp);
-}
-
 /****************************************************************************************
  * bi_div_discriminant
  * x=yq+r(0<=r<y)
@@ -354,11 +295,14 @@ void divcc(bi** q, bi** r, bi* x, bi* y)
     bi_mul_improved(&temp, q_temp, y);
     bi_sub(&r_temp, x, temp);
 
+    bi* bi_one = NULL;
+    bi_set_one(&bi_one);
+
     //while R < 0 do
     while(r_temp->sign == NEGATIVE)
     {
         //(Q, R) ← (Q − 1, R + B) . At most 2 computations
-        bi_sub(&q_temp, q_temp, 1);
+        bi_sub(&q_temp, q_temp, bi_one);
         bi_add(&r_temp, r_temp, y);
     }
 
