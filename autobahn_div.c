@@ -580,7 +580,7 @@ void bi_div_general_long(bi** q, bi** r, bi* x, bi* y)
     bi* q_temp2 = NULL;
     bi_new(&q_temp2, 1);
     bi_set_zero(&q_temp2);
-
+//!
     //r_temp2 : temporary remainder[i+1]
     bi* r_temp2 = NULL;
     bi_new(&r_temp2, 2);

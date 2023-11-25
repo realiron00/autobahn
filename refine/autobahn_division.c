@@ -174,3 +174,42 @@ void bi_division_naive(Bigint** quotient, Bigint** remainder, const Bigint* divi
     bigint_delete(&tmp_remainder);
     bigint_delete(&one);
 }
+
+/*
+Multi-Precision Long Division
+A = A_0 + A_1*W^1 + ... + A_n-1*W^n-1, B (A_j ∈ [0, W))
+Output: (Q = Q_0 + Q_1*W^1 + ... + Q_n-1*W^n-1, R)
+such that A = BQ + R (0 ≤ R < B, Q_j ∈ [0, W)).
+1: procedure DIVlong(A, B)
+2: if A < B then
+3: return (0, A)
+4: end if
+5: R_n ← 0
+6: for i = n − 1 downto 0 do
+7: (Q_i, R_i) ← DIVC(R_i+1*W + A_i, B). 
+8: end for
+9: Q ← Q_0 + Q_1*W + ... + Q_n−1*W^n−1
+10: return (Q, R0)
+11: end procedure
+*/
+void bigint_division_general_long(Bigint** quotient, Bigint** remainder, const Bigint* dividend, const Bigint* divisor)
+{
+    /* Check invalid case or special case of division */
+    bool special_case_flag = bigint_division_special_case(quotient, remainder, dividend, divisor);
+    if (special_case_flag == true) return;
+
+    /* Number of digits about quotient and remainder */
+    Word size_quotient = dividend->digit_num - divisor->digit_num + 1;
+    Word size_remainder = divisor->digit_num;
+    
+    /* Allocate Bigint */
+    Bigint* tmp_quotient = NULL;  // result of quotient
+    Bigint* tmp_remainder = NULL; // result of remainder
+    Bigint* tmp_quotient_digit = NULL;  // result of quotient digit
+    Bigint* tmp_rwa = NULL;  // result of remainder with addition
+    // (rwa->digits[0] = remainder->digits[i], rwa->digits[1] = tmp_remainder->digits[i+1])
+    bigint_new(&tmp_quotient, size_quotient);
+    bigint_new(&tmp_remainder, size_remainder);
+    bigint_new(&tmp_quotient_digit, 1);
+
+}
