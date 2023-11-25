@@ -356,31 +356,65 @@ int main()
 	// 		break;
 	// }
 
-	// bi* x = NULL;
-    // bi* y = NULL;
+	bi* x = NULL;
+    bi* y = NULL;
 
-    // bi_new(&x, 1);
-    // bi_new(&y, 1);
+    bi_new(&x, 1);
+    bi_new(&y, 1);
 
-    // x->a[0]=1001254;
+    x->a[0]=0x5be;
 
-	// y->a[0]=736;
+	y->a[0]=0x77;
 
-	// printf("x Sign: %u\n", x->sign);
-	// printf("x Dmax: %u\n", x->dmax);
-	// printf("x Digits: ");
-	// for (int i = 0; i < x->dmax; i++) {
-	// 	printf("%d ", x->a[i]);
-	// }
-	// printf("\n \n");
+	printf("x Sign: %u\n", x->sign);
+	printf("x Dmax: %u\n", x->dmax);
+	printf("x Digits: ");
+	for (int i = 0; i < x->dmax; i++) {
+		printf("%x ", x->a[i]);
+	}
+	printf("\n \n");
 
-	// printf("y Sign: %u\n", y->sign);
-	// printf("y Dmax: %u\n", y->dmax);
-	// printf("y Digits: ");
-	// for (int i = 0; i < y->dmax; i++) {
-	// 	printf("%d ", y->a[i]);
-	// }
-	// printf("\n\n");
+	printf("y Sign: %u\n", y->sign);
+	printf("y Dmax: %u\n", y->dmax);
+	printf("y Digits: ");
+	for (int i = 0; i < y->dmax; i++) {
+		printf("%x ", y->a[i]);
+	}
+	printf("\n\n");
+
+	bi* q = NULL;
+	bi_new(&q, 1);
+
+	bi* r = NULL;
+	bi_new(&r, 1);
+
+	//bi_div_long(&q, &r, x, y);
+	bi_div_general_long(&q, &r, x, y);
+
+	printf("q Sign: %u\n", q->sign);
+	printf("q Dmax: %u\n", q->dmax);
+	printf("q Digits: ");
+	for (int i = 0; i < q->dmax; i++) {
+		printf("%x ", q->a[i]);
+	}
+	printf("\n\n");
+
+	printf("r Sign: %u\n", r->sign);
+	printf("r Dmax: %u\n", r->dmax);
+	printf("r Digits: ");
+	for (int i = 0; i < r->dmax; i++) 
+	{
+		printf("%x ", r->a[i]);
+	}
+
+
+	// // x/y
+	// bi* y=NULL;
+	// bi_new(&y, 1);
+	// bi_set_by_str(&y, "77", POSITIVE, HEXADECIMAL);
+	// bi_show_hex(y);
+	// bi* x=NULL;
+	// bi_new(&x, 1);
 
 	// bi* q = NULL;
 	// bi_new(&q, 1);
@@ -388,26 +422,35 @@ int main()
 	// bi* r = NULL;
 	// bi_new(&r, 1);
 
-	// //bi_div_long(&q, &r, x, y);
-	// bi_div_general_long(&q, &r, x, y);
-
-	// printf("q Sign: %u\n", q->sign);
-	// printf("q Dmax: %u\n", q->dmax);
-	// printf("q Digits: ");
-	// for (int i = 0; i < q->dmax; i++) {
-	// 	printf("%d ", q->a[i]);
-	// }
-	// printf("\n\n");
-
-	// printf("r Sign: %u\n", r->sign);
-	// printf("r Dmax: %u\n", r->dmax);
-	// printf("r Digits: ");
-	// for (int i = 0; i < r->dmax; i++) 
+	// //x를 하나씩 증가시키면서 y로 나누어지는지 확인
+	// for(int i=0; i<100000; i++)
 	// {
-	// 	printf("%d ", r->a[i]);
-	// }
+	// 	bi* x=NULL;
+	// 	bi_new(&x, 1);
 
-	bi_test_div();
+	// 	bi* q = NULL;
+	// 	bi_new(&q, 1);
+
+	// 	bi* r = NULL;
+	// 	bi_new(&r, 1);
+	// 	bi_set_by_str(&x, "0", POSITIVE, HEXADECIMAL);
+	// 	x->a[0]=i;
+	// 	printf("x: ");
+	// 	bi_show_hex(x);
+	// 	printf("\n");
+
+	// 	bi_div_general_long(&q, &r, x, y);
+	// 	printf("q: ");
+	// 	bi_show_hex(q);
+	// 	printf("\n");
+	// 	printf("r: ");
+	// 	bi_show_hex(r);
+	// 	printf("\n");
+
+	// 	bi_delete(&x);
+	// 	bi_delete(&q);
+	// 	bi_delete(&r);
+	// }
 
 	return 0;
 }

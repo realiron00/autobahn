@@ -196,6 +196,7 @@ Output: Q such that A = BQ + R (0 ≤ R < B, Q_j ∈ [0, W)).
 */
 void word2_long_div(bi_word* q, bi_word x1, bi_word x0, bi_word y)
 {
+    printf("word2_long_div\n");
     bi_word q_word = 0;
 
     bi* q_temp = NULL;
@@ -217,6 +218,7 @@ void word2_long_div(bi_word* q, bi_word x1, bi_word x0, bi_word y)
     bi_new(&y_temp, 1);
     y_temp->a[0] = y;
 
+    bi_word bit_idx=0;
 
     for(int j=31;j>=0;j--)
     {
@@ -239,7 +241,7 @@ void word2_long_div(bi_word* q, bi_word x1, bi_word x0, bi_word y)
         {
             bi_add(&r_temp, r_temp, r_temp);
 
-            bi_word bit_idx = j % BITLEN_OF_WORD;
+            bit_idx = j % BITLEN_OF_WORD;
 
             aj_temp->a[0] = (x0 >> bit_idx) & 1;
 
@@ -312,9 +314,7 @@ Output: (Q, R) such that A = BQ + R (0 ≤ R < B, Q ∈ [0, W)).
 */
 void divcc(bi** q, bi** r, bi* x, bi* y)
 {
-    bi_refine(x);
-    bi_refine(y);
-
+    printf("divcc\n");
     bi* q_temp = NULL;
     bi_new(&q_temp, 1);
     bi_set_zero(&q_temp);
@@ -322,12 +322,13 @@ void divcc(bi** q, bi** r, bi* x, bi* y)
     bi* r_temp = NULL;
     bi_new(&r_temp, y->dmax);
     bi_set_zero(&r_temp);
+
     //if n = m then
     if(x->dmax == y->dmax)
     {
         //Q ← A_m-1/B_m-1 . Q ∈ [0, W)
-        bi_word temp = x->a[x->dmax-1] / y->a[y->dmax-1];
-        q_temp->a[0] = temp;
+        bi_word temp22 = x->a[x->dmax-1] / y->a[y->dmax-1];
+        q_temp->a[0] = temp22;
     }
 
     //if n = m + 1 then
@@ -354,32 +355,93 @@ void divcc(bi** q, bi** r, bi* x, bi* y)
             q_temp->a[0] = q_temp2;
         }
     }
+    printf("1\n");
 
     //R ← A − BQ . Q ∈ [0, W)
     bi* temp = NULL;
-    bi_new(&temp, y->dmax);
+    bi_new(&temp, y->dmax+1);
     bi_textbook_mul(&temp, q_temp, y);
     bi_sub(&r_temp, x, temp);
+    printf("2\n");
 
     bi* bi_one = NULL;
     bi_set_one(&bi_one);
+    printf("3\n");
+
+    // printf("r_temp->sign: %d\n", r_temp->sign);
+    // printf("q_temp : ");
+    // for(int i=0; i<q_temp->dmax; i++)
+    // {
+    //     printf("0x%x ", q_temp->a[i]);
+    // }
+    // printf("\n");
+    // printf("r_temp : ");
+    // for(int i=0; i<r_temp->dmax; i++)
+    // {
+    //     printf("0x%x ", r_temp->a[i]);
+    // }
+    // printf("\n");
+    // printf("y : ");
+    // for(int i=0; i<y->dmax; i++)
+    // {
+    //     printf("0x%x ", y->a[i]);
+    // }
+    // printf("\n");
 
     //while R < 0 do
+    printf(r_temp->sign == NEGATIVE ? "r_temp->sign == NEGATIVE\n" : "r_temp->sign != NEGATIVE\n");
+    int jjj=0;
+    printf("r_temp : ");
+    for(int i=0; i<r_temp->dmax; i++)
+    {
+        printf("0x%x ", r_temp->a[i]);
+    }
+    printf("\n");
+
+    printf("q_temp : ");
+    for(int i=0; i<q_temp->dmax; i++)
+    {
+        printf("0x%x ", q_temp->a[i]);
+    }
+    printf("\n");
+
+    printf("y : ");
+    for(int i=0; i<y->dmax; i++)
+    {
+        printf("0x%x ", y->a[i]);
+    }
+    printf("\n");
     while(r_temp->sign == NEGATIVE)
     {
         //(Q, R) ← (Q − 1, R + B) . At most 2 computations
         bi_sub(&q_temp, q_temp, bi_one);
+        // printf("q_temp : ");
+        // for(int i=0; i<q_temp->dmax; i++)
+        // {
+        //     printf("%d ", q_temp->a[i]);
+        // }
+        // printf("\n");
         bi_add(&r_temp, r_temp, y);
+        // printf("r_temp : ");
+        // for(int i=0; i<r_temp->dmax; i++)
+        // {
+        //     printf("%d ", r_temp->a[i]);
+        // }
+        // printf("\n");
     }
+    jjj=0;
+    printf("4\n");
 
     //copy quotient and remainder to output variables q and r
     bi_cpy(q,q_temp);
     bi_cpy(r,r_temp);
+    printf("5\n");
 
     //Delete the temporary storage
     bi_delete(&q_temp);
     bi_delete(&r_temp);
     bi_delete(&temp);
+    bi_delete(&bi_one);
 
     return;
 }
@@ -402,6 +464,7 @@ Output: (Q, R) such that A = BQ + R (0 ≤ R < B, Q ∈ [0, W)).
 */
 void divc(bi** q, bi** r, bi* x, bi* y)
 {
+    printf("divc\n");
     //if x < y, return q = 0, r = x
     if (bi_cmp(x,y) == -1)
     {
@@ -456,6 +519,9 @@ void divc(bi** q, bi** r, bi* x, bi* y)
     bi_new(&r_temp, y_temp->dmax);
     bi_set_zero(&r_temp);
 
+    bi_refine(x_temp);
+    bi_refine(y_temp);
+
     //Q', R' ← DIVCC(A', B')
     divcc(&q_temp, &r_temp, x_temp, y_temp);
 
@@ -496,6 +562,7 @@ such that A = BQ + R (0 ≤ R < B, Q_j ∈ [0, W)).
 */
 void bi_div_general_long(bi** q, bi** r, bi* x, bi* y)
 {
+    printf("bi_div_general_long\n");
     //discriminant
     bi_div_discriminant(q, r, x, y);
 
@@ -507,6 +574,7 @@ void bi_div_general_long(bi** q, bi** r, bi* x, bi* y)
     //q_temp : temporary quotient
     bi* q_temp = NULL;
     bi_new(&q_temp, (x->dmax)-(y->dmax)+1);
+    bi_set_zero(&q_temp); //initialize q_temp
 
     //q_temp2 : temporary quotient[i]
     bi* q_temp2 = NULL;
@@ -521,6 +589,7 @@ void bi_div_general_long(bi** q, bi** r, bi* x, bi* y)
     //x_temp : temporary x[i]
     bi* x_temp = NULL;
     bi_new(&x_temp, 1);
+    bi_set_zero(&x_temp);
 
     //rwa : temporary remainder[i+1]*W + x[i]
     bi* rwa = NULL;
