@@ -37,12 +37,20 @@ void bigint_addition_unsigned(Bigint** result, Bigint* operand_x, Bigint* operan
     Word current_carry = 0;
     Word next_carry = 0;
     Bigint* tmp_result = NULL;  // This will be the result.
+    
 
-    /* Make operands have the same number of digits */
-    if (operand_x->digit_num != operand_y->digit_num) {
+
+    /* Make operands have the same number of digits */  // !!         
+    if (operand_y->digit_num != operand_x->digit_num)
+    {
+        Word previous_digit_num = operand_y->digit_num; // !!     
         operand_y->digits = (Word*)realloc(operand_y->digits, operand_x->digit_num * SIZE_OF_WORD);
         operand_y->digit_num = operand_x->digit_num;
+
+        for (int i = operand_y->digit_num; i > previous_digit_num; i--) // !!
+            operand_y->digits[i - 1] = 0;
     }
+
 
     /* Allocate Bigint */
     bigint_new(&tmp_result, operand_x->digit_num + 1);

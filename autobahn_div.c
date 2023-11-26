@@ -211,14 +211,14 @@ void word2_long_div(bi_word* q, bi_word x1, bi_word x0, bi_word y)
     bi_new(&temp_231, 1);
     temp_231->a[0] = 0x80000000;
 
-    bi* aj_temp = NULL;
+    bi* aj_temp = NULL;//!
     bi_new(&aj_temp, 1);
 
-    bi* y_temp = NULL;
+    bi* y_temp = NULL;//!
     bi_new(&y_temp, 1);
     y_temp->a[0] = y;
 
-    bi_word bit_idx=0;
+    bi_word bit_idx=0;//!
 
     for(int j=31;j>=0;j--)
     {
@@ -601,7 +601,7 @@ void bi_div_general_long(bi** q, bi** r, bi* x, bi* y)
         r_temp2->a[1] = r_temp->a[0];
         x_temp->a[0] = x->a[i];
         bi_add(&rwa, r_temp2, x_temp);
-
+//!11261601
         //DIVC(rwa, y)
         divc(&q_temp2, &r_temp, rwa, y);
 

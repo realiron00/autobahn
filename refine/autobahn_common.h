@@ -30,7 +30,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#define BI_WORD8
 
 // Define the word size based on preprocessor macros
 #if defined(BI_WORD8)
