@@ -195,71 +195,59 @@ Output: Q such that A = BQ + R (0 ≤ R < B, Q_j ∈ [0, W)).
 */
 void word2_long_div(Word* quotient, Word word_dividend_1, Word word_dividend_0, Word word_divisor)
 {
-    /* one block of quotient */
     Word word_quotient = 0;
+    Bigint* tmp_quotient = NULL;
+    Bigint* tmp_remainder = NULL;
+    Bigint* tmp_twobitlength = NULL;
+    Bigint* tmp_dividend_bit = NULL;
+    Bigint* tmp_divisor = NULL;
 
-    /* Allocate Bigint */
-    Bigint* tmp_quotient = NULL;        // result of quotient
-    Bigint* tmp_remainder = NULL;       // result of remainder
-    Bigint* tmp_twobitlength = NULL;    // 2^w
-    Bigint* tmp_dividend_bit = NULL;    // bit of dividend
-    Bigint* tmp_divisor = NULL;         // word_divisor
     bigint_new(&tmp_quotient, 1);
     bigint_new(&tmp_remainder, 2);
     bigint_new(&tmp_twobitlength, 1);
     bigint_new(&tmp_dividend_bit, 1);
     bigint_new(&tmp_divisor, 1);
 
-    /* Initialize Bigint */
-    bigint_set_zero(&tmp_quotient);                 // Q <- 0
-    tmp_remainder->digits[0] = word_dividend_1;     // R <- A_1
-    tmp_divisor->digits[0] = word_divisor;          // divisor
+    bigint_set_zero(&tmp_quotient);
+    tmp_remainder->digits[0] = word_dividend_1;
 
-    /* Calculate 2^w */
+    tmp_divisor->digits[0] = word_divisor;
+
+    //tmp_twobitlength = 2^w
     bigint_set_one(&tmp_twobitlength);
     for(int i = 0; i < BITLEN_OF_WORD; i++)
-        bigint_expand_one_bit(&tmp_twobitlength, tmp_twobitlength); // 2^w
+        bigint_expand_one_bit(&tmp_twobitlength, tmp_twobitlength);
 
-    /* 2-word long division */
     for(int j = BITLEN_OF_WORD - 1; j >= 0; j--)
     {
-        bigint_refine(tmp_remainder); // refine remainder
-
-        /* Case R >= 2^w−1 */
-        if(bigint_compare(tmp_remainder, tmp_twobitlength) == LEFT_IS_BIG) //! 크거나 같아야함(사실 여기서는 이럴 일 없긴 함)
+        bigint_refine(tmp_remainder);
+        if(bigint_compare(tmp_remainder, tmp_twobitlength) == LEFT_IS_BIG)
         {
-            word_quotient += 1 << j; // Q <- Q + 2^j
-            
-            bigint_expand_one_bit(&tmp_remainder, tmp_remainder);               // R <- 2R
-            tmp_dividend_bit->digits[0] = ((word_dividend_0 & (1 << j)) >> j);  // a_j
-            
-            bigint_addition(&tmp_remainder, tmp_remainder, tmp_dividend_bit);   // R <- 2R + a_j
-            bigint_subtraction(&tmp_remainder, tmp_remainder, tmp_divisor);     // R <- 2R + a_j - B //!헷갈릴 수 있음
+            word_quotient += 1 << j;
+            bigint_expand_one_bit(&tmp_remainder, tmp_remainder);
+            tmp_dividend_bit->digits[0] = ((word_dividend_0 & (1 << j)) >> j);
+            bigint_addition(&tmp_remainder, tmp_remainder, tmp_dividend_bit);
+            bigint_subtraction(&tmp_remainder, tmp_remainder, tmp_divisor);
 
-            tmp_quotient->digits[0] = word_quotient; // Q
+            tmp_quotient->digits[0] = word_quotient;
         }
-        /* Case R < 2^w−1 */
         else
         {
-            bigint_expand_one_bit(&tmp_remainder, tmp_remainder);              // R <- 2R
-            tmp_dividend_bit->digits[0] = ((word_dividend_0 & (1 << j)) >> j); // a_j
-            
-            bigint_addition(&tmp_remainder, tmp_remainder, tmp_dividend_bit); // R <- 2R + a_j
+            bigint_expand_one_bit(&tmp_remainder, tmp_remainder);
+            tmp_dividend_bit->digits[0] = ((word_dividend_0 & (1 << j)) >> j);
+            bigint_addition(&tmp_remainder, tmp_remainder, tmp_dividend_bit);
 
-            if(bigint_compare(tmp_remainder, tmp_divisor) >= 0) // R >= B
+            if(bigint_compare(tmp_remainder, tmp_divisor) >= 0)
             {
-                word_quotient += 1 << j; // Q <- Q + 2^j
-
-                bigint_subtraction(&tmp_remainder, tmp_remainder, tmp_divisor); // R <- R - B
-                
-                tmp_quotient->digits[0] = word_quotient; // Q
+                word_quotient += 1 << j;
+                bigint_subtraction(&tmp_remainder, tmp_remainder, tmp_divisor);
+                tmp_quotient->digits[0] = word_quotient;
             }
         }
     }
 
-    *quotient = word_quotient;  // Q <- word_quotient
+    *quotient = word_quotient;
 
-    /* Free Bigint */
     bigint_delete(&tmp_quotient);
     bigint_delete(&tmp_remainder);
     bigint_delete(&tmp_twobitlength);
@@ -290,70 +278,59 @@ Output: (Q, R) such that A = BQ + R (0 ≤ R < B, Q ∈ [0, W)).
 16: return (Q, R)
 17: end procedure
 */
-//! 느낌상 2word_long_div에 Bigint를 적용시키는게 맞는거 같음
 void bi_divcc(Bigint** quotient, Bigint** remainder, const Bigint* dividend, const Bigint* divisor)
 {
-    /* one block of quotient */
-    Word word_quotient = 0; // one block of quotient
+    Word word_quotient = 0;
+    Bigint* tmp_quotient = NULL;
+    Bigint* tmp_remainder = NULL;
+    Bigint* tmp_bq = NULL;
+    Bigint* tmp_one = NULL;
 
-    /* Allocate Bigint */
-    Bigint* tmp_quotient = NULL;    //result of quotient
-    Bigint* tmp_remainder = NULL;   //result of remainder
-    Bigint* tmp_bq = NULL;          //result of BQ
-    Bigint* tmp_one = NULL;         //1
     bigint_new(&tmp_quotient, 1);
     bigint_new(&tmp_remainder, divisor->digit_num);
     bigint_new(&tmp_bq, divisor->digit_num + 1);
     bigint_new(&tmp_one, 1);
 
-    /* Initialize Bigint */
     bigint_set_zero(&tmp_quotient);
     bigint_set_zero(&tmp_remainder);
     bigint_set_one(&tmp_one);
 
-    /* Case dividend->digit_num(=n) == divisor->digit_num(=m) */
     if(dividend->digit_num == divisor->digit_num)
     {
         word_quotient = dividend->digits[divisor->digit_num - 1] / divisor->digits[divisor->digit_num - 1];
-        tmp_quotient->digits[0] = word_quotient; // Q <- |A_(m - 1) / B_(m - 1)|
+        tmp_quotient->digits[0] = word_quotient;
     }
-    /* Case dividend->digit_num(=n) != divisor->digit_num(=m) */
     else
     {
-        /* Case A_m = B_m−1 */
         if(dividend->digits[divisor->digit_num] == divisor->digits[divisor->digit_num - 1])
         {
-            tmp_quotient->digits[0] = 0xFFFFFFFF; // Q <- W - 1 //! 32비트에서만 성공, 다른거를 위한 수정 필요
+            tmp_quotient->digits[0] = 0xFFFFFFFF;
         }
-        /* Case A_m < B_(m-1) */
         else if(dividend->digits[divisor->digit_num]<divisor->digits[divisor->digit_num - 1])
         {
-            Word word_dividend_1 = dividend->digits[divisor->digit_num];        // A_m
-            Word word_dividend_0 = dividend->digits[divisor->digit_num - 1];    // A_(m-1)
-            Word word_divisor = divisor->digits[divisor->digit_num - 1];        // B_(m-1)
+            Word word_dividend_1 = dividend->digits[divisor->digit_num];
+            Word word_dividend_0 = dividend->digits[divisor->digit_num - 1];
+            Word word_divisor = divisor->digits[divisor->digit_num - 1];
 
-            word2_long_div(&word_quotient, word_dividend_1, word_dividend_0, word_divisor); // 2word_long_div(A_mW + A_m−1, B_m−1)
-            tmp_quotient->digits[0] = word_quotient; // Q <- |A_mW + A_m−1 / B_m−1|
+            word2_long_div(&word_quotient, word_dividend_1, word_dividend_0, word_divisor);
+            tmp_quotient->digits[0] = word_quotient;
         }
     }
 
-    /* Calculate quotient and remainder */
-    bigint_multiplication_textbook(&tmp_bq, tmp_quotient, divisor); // BQ
-    bigint_subtraction(&tmp_remainder, dividend, tmp_bq);         // R <- A - BQ
+    bigint_multiplication_textbook(&tmp_bq, tmp_quotient, divisor);
+    bigint_subtraction(&tmp_remainder, dividend, tmp_bq);
 
-    while(tmp_remainder->sign == NEGATIVE) // While R < 0
+    while(tmp_remainder->sign == NEGATIVE)
     {
-        bigint_subtraction(&tmp_quotient, tmp_quotient, tmp_one);   // Q <- Q - 1
-        bigint_addition(&tmp_remainder, tmp_remainder, divisor);    // R <- R + B
+        bigint_subtraction(&tmp_quotient, tmp_quotient, tmp_one);
+        bigint_addition(&tmp_remainder, tmp_remainder, divisor);
     }
 
-    /* Get result */
     bigint_refine(tmp_quotient);
     bigint_refine(tmp_remainder);
     bigint_copy(quotient, tmp_quotient);
     bigint_copy(remainder, tmp_remainder);
 
-    /* Free Bigint */
     bigint_delete(&tmp_quotient);
     bigint_delete(&tmp_remainder);
     bigint_delete(&tmp_bq);
@@ -378,19 +355,20 @@ Output: (Q, R) such that A = BQ + R (0 ≤ R < B, Q ∈ [0, W)).
 */
 void bi_divc(Bigint** quotient, Bigint** remainder, const Bigint* dividend, const Bigint* divisor)
 {
-    /* Allocate Bigint */
-    Bigint* power_of_two = NULL;        // 2^k //!뒤에 무슨 말을 쓸지 고민
-    Bigint* dividend_prime = NULL;      // 2^k*A
-    Bigint* divisor_prime = NULL;       // 2^k*B
-    Bigint* quotient_prime = NULL;      // Q'
-    Bigint* remainder_prime = NULL;     // R'
+    Bigint* power_of_two = NULL;
+    Bigint* dividend_prime = NULL;
+    Bigint* divisor_prime = NULL;
+    Bigint* quotient_prime = NULL;
+    Bigint* remainder_prime = NULL;
+
     bigint_new(&power_of_two, 2);
     bigint_new(&dividend_prime, dividend->digit_num + 1);
     bigint_new(&divisor_prime, divisor->digit_num + 1);
     bigint_new(&quotient_prime, dividend->digit_num + 1);
     bigint_new(&remainder_prime, divisor->digit_num + 1);
+
+    bigint_set_one(&power_of_two);
     
-    /* Special case : dividend < divisor, we have zero quotient and dividend remainder*/
     if(bigint_compare(dividend, divisor) == LEFT_IS_SMALL)
     {
         bigint_set_zero(quotient);
@@ -398,11 +376,9 @@ void bi_divc(Bigint** quotient, Bigint** remainder, const Bigint* dividend, cons
         return;
     }
 
-    /* Compute k ∈ Z≥0 such that 2^k*B_(m−1) ∈ [2^(w−1), 2^w) */
     Word k = 0;
     Word temp = divisor->digits[divisor->digit_num - 1];
-
-    while(1) //! 일단 32비트는 성공, 다른거를 위한 수정 필요
+    while(1)
     {
         if(temp >= 0x80000000)
             break;
@@ -411,31 +387,25 @@ void bi_divc(Bigint** quotient, Bigint** remainder, const Bigint* dividend, cons
         k++;
     }
 
-    bigint_set_one(&power_of_two); // init to compute 2^k
-
     for(int i = 0; i < k; i++)
-        bigint_expand_one_bit(&power_of_two, power_of_two); // 2^k
+        bigint_expand_one_bit(&power_of_two, power_of_two);
 
-    /*compute 2^k*A, 2^k*B */
-    bigint_multiplication_textbook(&dividend_prime, dividend, power_of_two);    // A' <- 2^k*A
-    bigint_multiplication_textbook(&divisor_prime, divisor, power_of_two);      // B' <- 2^k*B
+    bigint_multiplication_textbook(&dividend_prime, dividend, power_of_two);
+    bigint_multiplication_textbook(&divisor_prime, divisor, power_of_two);
+
     bigint_refine(dividend_prime);
     bigint_refine(divisor_prime);
 
-    /* DIVCC(A', B') */
-    bi_divcc(&quotient_prime, &remainder_prime, dividend_prime, divisor_prime); // Q', R' <- DIVCC(A', B')
+    bi_divcc(&quotient_prime, &remainder_prime, dividend_prime, divisor_prime);
 
-    /* Q, R <- Q', 2^−k*R' */
     for(int i = 0; i < k; i++)
-        bigint_compress_one_bit(&remainder_prime, remainder_prime); // 2^−k*R'
+        bigint_compress_one_bit(&remainder_prime, remainder_prime);
 
-    /* Get result */
     bigint_refine(quotient_prime);
     bigint_refine(remainder_prime);
     bigint_copy(quotient, quotient_prime);
     bigint_copy(remainder, remainder_prime);
 
-    /* Free Bigint */
     bigint_delete(&power_of_two);
     bigint_delete(&dividend_prime);
     bigint_delete(&divisor_prime);
@@ -471,35 +441,33 @@ void bigint_division_general_long(Bigint** quotient, Bigint** remainder, const B
     Word size_remainder = divisor->digit_num;
     
     /* Allocate Bigint */
-    Bigint* tmp_quotient = NULL;        // result of quotient
-    Bigint* tmp_remainder = NULL;       // result of remainder
+    Bigint* tmp_quotient = NULL;  // result of quotient
+    Bigint* tmp_remainder = NULL; // result of remainder
     Bigint* tmp_quotient_digit = NULL;  // result of quotient digit
-    Bigint* tmp_rwa = NULL;             // result of remainder with addition
+    Bigint* tmp_rwa = NULL;  // result of remainder with addition
     bigint_new(&tmp_quotient, size_quotient);
     bigint_new(&tmp_remainder, size_remainder);
     bigint_new(&tmp_quotient_digit, 1);
     bigint_new(&tmp_rwa, size_remainder + 1);
 
-    /* Initialize Bigint */
     bigint_set_zero(&tmp_quotient);
     bigint_set_zero(&tmp_remainder);
 
-    /* general long division */
     for(int i = dividend->digit_num - 1; i >= 0; i--)
     {
-        Bigint* tmp_dividend = NULL; // result of dividend one block
+        Bigint* tmp_dividend = NULL;
         bigint_new(&tmp_dividend, 1);
-        tmp_dividend->digits[0] = dividend->digits[i]; // A_i
+        tmp_dividend->digits[0] = dividend->digits[i];
 
         //rwa = tmp_remainder*W + dividend->digits[i]
-        bigint_expand(&tmp_rwa, tmp_remainder, 1);          //rwa <- R_(i+1)*W
-        bigint_addition(&tmp_rwa, tmp_rwa, tmp_dividend);   //rwa <- R_(i+1)*W + A_i
+        bigint_expand(&tmp_rwa, tmp_remainder, 1);
+        bigint_addition(&tmp_rwa, tmp_rwa, tmp_dividend);
 
-        bi_divc(&tmp_quotient_digit, &tmp_remainder, tmp_rwa, divisor); //Q_i, R_i <- DIVC(R_(i+1)*W + A_i, B)
-        bigint_expand(&tmp_quotient, tmp_quotient, 1); //Q_i
-        bigint_addition(&tmp_quotient, tmp_quotient, tmp_quotient_digit); //Q <- Q + Q_i*W^i
+        bi_divc(&tmp_quotient_digit, &tmp_remainder, tmp_rwa, divisor);
+        bigint_expand(&tmp_quotient, tmp_quotient, 1);
+        bigint_addition(&tmp_quotient, tmp_quotient, tmp_quotient_digit);
 
-        bigint_delete(&tmp_dividend); //free tmp_dividend
+        bigint_delete(&tmp_dividend);
     }
 
     /* Get result */
