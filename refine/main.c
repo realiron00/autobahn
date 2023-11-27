@@ -1,4 +1,5 @@
 #include "autobahn.h"
+#include "autobahn_test.h"
 
 int main()
 {
@@ -12,9 +13,9 @@ int main()
     // bigint_new(&q, 1);
     // bigint_new(&r, 1);
 
-    // x->digits[0]=0x6;
+    // x->digits[0]=0x65312;
 
-    // y->digits[0]=0x3;
+    // y->digits[0]=0x33221;
 
     // printf("x Sign: %u\n", x->sign);
     // printf("x Dmax: %u\n", x->digit_num);
@@ -32,8 +33,7 @@ int main()
     // }
     // printf("\n\n");
 
-    // //bigint_division_binary_long(&q, &r, x, y);
-    // bigint_division_general_long(&q, &r, x, y);
+    // bigint_division_word_long(&q, &r, x, y);
 
     // printf("q Sign: %u\n", q->sign);
     // printf("q Dmax: %u\n", q->digit_num);
@@ -52,26 +52,28 @@ int main()
     // }
     // printf("\n\n");
 
-    Bigint* x = NULL;
-    Bigint* y = NULL;
-    Bigint* z = NULL;
-    Bigint* w = NULL;
+    // Bigint* x = NULL;
+    // Bigint* y = NULL;
+    // Bigint* z = NULL;
+    // Bigint* w = NULL;
 
-    bigint_new(&x, 1);
-    bigint_new(&y, 1);
-    bigint_new(&z, 1);
-    bigint_new(&w, 1);
+    // bigint_new(&x, 1);
+    // bigint_new(&y, 1);
+    // bigint_new(&z, 1);
+    // bigint_new(&w, 1);
 
-    bigint_set_by_hex_string(&x, "40000000", POSITIVE);
-    bigint_set_by_hex_string(&y, "6", POSITIVE);
+    // bigint_set_by_hex_string(&x, "40000000", POSITIVE);
+    // bigint_set_by_hex_string(&y, "6", POSITIVE);
 
-    bigint_multiplication_textbook(&z, x, y);
+    // bigint_multiplication_textbook(&z, x, y);
 
-    bigint_show_hex(z);
-    bigint_delete(&x);
-    bigint_delete(&y);
-    bigint_delete(&z);
-    bigint_delete(&w);
+    // bigint_show_hex(z);
+    // bigint_delete(&x);
+    // bigint_delete(&y);
+    // bigint_delete(&z);
+    // bigint_delete(&w);
+
+    bigint_test_div();
 
     return 0;
 }

@@ -107,15 +107,15 @@ void bigint_test_div()
         read_integer_from_file(&operand_y, f_operand_y);
 
         /* 부호 바꾸기: 바꾸기 싫으면 주석처리 */
-        operand_x->sign = NEGATIVE;
-        operand_y->sign = NEGATIVE;
+        //operand_x->sign = NEGATIVE;
+        //operand_y->sign = NEGATIVE;
 
         if(bigint_is_zero(operand_y) == TRUE) {
             fprintf(f_result_q, "DIV0!\n");
             fprintf(f_result_r, "DIV0!\n");
         } else {
             /* 연산 */
-    	    bigint_reduction_barrett(&remainder, operand_x, operand_y, quotient);
+    	    bigint_division_word_long(&quotient, &remainder, operand_x, operand_y);
 
             /* 연산 결과 저장 */
             write_integer_into_file(f_result_q, quotient);
